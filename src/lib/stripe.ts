@@ -5,12 +5,19 @@
 // Copy the Price ID (starts with `price_`) into the env var.
 import Stripe from 'stripe'
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2026-04-22.dahlia',
-})
+let _stripe: Stripe | null = null
+
+function getStripe(): Stripe {
+  if (!_stripe) {
+    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: '2026-04-22.dahlia',
+    })
+  }
+  return _stripe
+}
 
 export async function createCheckoutSession(userId: string, userEmail: string) {
-  const session = await stripe.checkout.sessions.create({
+  const session = await getStripe().checkout.sessions.create({
     customer_email: userEmail,
     line_items: [{ price: process.env.STRIPE_PRO_PRICE_ID!, quantity: 1 }],
     mode: 'subscription',
@@ -22,8 +29,12 @@ export async function createCheckoutSession(userId: string, userEmail: string) {
 }
 
 export async function createCustomerPortalSession(stripeCustomerId: string) {
-  return stripe.billingPortal.sessions.create({
+  return getStripe().billingPortal.sessions.create({
     customer:   stripeCustomerId,
     return_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings`,
   })
+}
+
+export function getStripeInstance(): Stripe {
+  return getStripe()
 }

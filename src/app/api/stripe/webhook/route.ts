@@ -1,6 +1,6 @@
 // src/app/api/stripe/webhook/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { stripe } from '@/lib/stripe'
+import { getStripeInstance } from '@/lib/stripe'
 import { db } from '@/lib/db'
 import { subscriptions } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
 
   let event: Stripe.Event
   try {
-    event = stripe.webhooks.constructEvent(body, signature, process.env.STRIPE_WEBHOOK_SECRET!)
+    event = getStripeInstance().webhooks.constructEvent(body, signature, process.env.STRIPE_WEBHOOK_SECRET!)
   } catch {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
       const userId = checkoutSession.metadata?.userId
       if (!userId) break
 
-      const subscription = await stripe.subscriptions.retrieve(
+      const subscription = await getStripeInstance().subscriptions.retrieve(
         checkoutSession.subscription as string
       )
 
