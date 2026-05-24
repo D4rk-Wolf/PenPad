@@ -1,65 +1,116 @@
-import Image from "next/image";
+import Link from 'next/link'
+import { Button, buttonVariants } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardContent } from '@/components/ui/card'
+import { cn } from '@/lib/utils'
 
-export default function Home() {
+export default function LandingPage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="min-h-screen bg-background">
+      <header className="border-b">
+        <div className="container mx-auto flex h-14 items-center justify-between px-4">
+          <span className="font-semibold text-lg">PenPad</span>
+          <nav className="flex items-center gap-4">
+            <Link href="/login" className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }))}>
+              Sign in
+            </Link>
+            <Link href="/signup" className={cn(buttonVariants({ size: 'sm' }))}>
+              Get started free
+            </Link>
+          </nav>
+        </div>
+      </header>
+
+      <main>
+        {/* Hero */}
+        <section className="container mx-auto px-4 py-24 text-center">
+          <Badge variant="secondary" className="mb-4">Free to start</Badge>
+          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl mb-6">
+            Professional pen test reports<br />in minutes, not hours
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
+            Log findings, score with CVSS, and export a client-ready PDF report.
+            Stop wrestling with Word templates.
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+          <Link href="/signup" className={cn(buttonVariants({ size: 'lg' }))}>
+            Start for free
+          </Link>
+        </section>
+
+        {/* Features */}
+        <section className="container mx-auto px-4 pb-24">
+          <div className="grid gap-6 md:grid-cols-3">
+            {[
+              {
+                title: 'CVSS Scoring',
+                body: 'Input a CVSS score and severity is calculated automatically — Critical, High, Medium, Low, or Info.',
+              },
+              {
+                title: 'Professional PDFs',
+                body: 'One click generates a structured report: cover page, executive summary, and per-finding technical detail.',
+              },
+              {
+                title: 'Built for speed',
+                body: 'Log findings as you work. No complex setup, no learning curve. Focus on the engagement, not the paperwork.',
+              },
+            ].map((f) => (
+              <Card key={f.title}>
+                <CardContent className="pt-6">
+                  <h3 className="font-semibold mb-2">{f.title}</h3>
+                  <p className="text-sm text-muted-foreground">{f.body}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+
+        {/* Pricing */}
+        <section className="border-t">
+          <div className="container mx-auto px-4 py-24">
+            <h2 className="text-3xl font-bold text-center mb-12">Simple pricing</h2>
+            <div className="grid gap-6 md:grid-cols-2 max-w-2xl mx-auto">
+              <Card>
+                <CardContent className="pt-6">
+                  <p className="font-semibold text-lg mb-1">Free</p>
+                  <p className="text-3xl font-bold mb-4">£0</p>
+                  <ul className="space-y-2 text-sm text-muted-foreground mb-6">
+                    <li>3 reports</li>
+                    <li>Unlimited findings</li>
+                    <li>CVSS scoring</li>
+                    <li className="line-through">PDF export</li>
+                  </ul>
+                  <Link href="/signup" className={cn(buttonVariants({ variant: 'outline' }), 'w-full')}>
+                    Get started
+                  </Link>
+                </CardContent>
+              </Card>
+              <Card className="border-primary">
+                <CardContent className="pt-6">
+                  <p className="font-semibold text-lg mb-1">Pro</p>
+                  <p className="text-3xl font-bold mb-4">
+                    £49<span className="text-base font-normal text-muted-foreground">/mo</span>
+                  </p>
+                  <ul className="space-y-2 text-sm text-muted-foreground mb-6">
+                    <li>Unlimited reports</li>
+                    <li>Unlimited findings</li>
+                    <li>CVSS scoring</li>
+                    <li>PDF export</li>
+                  </ul>
+                  <Link href="/signup" className={cn(buttonVariants(), 'w-full')}>
+                    Start free, upgrade when ready
+                  </Link>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </section>
       </main>
+
+      <footer className="border-t">
+        <div className="container mx-auto px-4 py-8 text-center text-sm text-muted-foreground">
+          PenPad by D4rkWolf Studios
+        </div>
+      </footer>
     </div>
-  );
+  )
 }
