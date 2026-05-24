@@ -13,7 +13,7 @@ function SubmitButton({ label }: { label: string }) {
   return <Button type="submit" size="sm" disabled={pending}>{pending ? 'Saving…' : label}</Button>
 }
 
-export function FindingForm({ reportId }: { reportId: string; onSuccess?: () => void }) {
+export function FindingForm({ reportId }: { reportId: string }) {
   const action = createFinding.bind(null, reportId)
 
   return (

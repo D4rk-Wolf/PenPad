@@ -28,13 +28,9 @@ export default async function DashboardPage() {
           )}
         </div>
         {atFreeLimit ? (
-          <Button asChild>
-            <Link href="/settings">Upgrade to Pro</Link>
-          </Button>
+          <Button render={<Link href="/settings" />}>Upgrade to Pro</Button>
         ) : (
-          <Button asChild>
-            <Link href="/reports/new">New Report</Link>
-          </Button>
+          <Button render={<Link href="/reports/new" />}>New Report</Button>
         )}
       </div>
 

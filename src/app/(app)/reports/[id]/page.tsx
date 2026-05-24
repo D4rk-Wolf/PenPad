@@ -38,12 +38,12 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
         </div>
         <div className="flex items-center gap-3">
           {isPro ? (
-            <Button asChild>
-              <Link href={`/reports/${id}/export`} target="_blank">Export PDF</Link>
+            <Button render={<Link href={`/reports/${id}/export`} target="_blank" />}>
+              Export PDF
             </Button>
           ) : (
-            <Button asChild variant="outline">
-              <Link href="/settings">Upgrade for PDF export</Link>
+            <Button variant="outline" render={<Link href="/settings" />}>
+              Upgrade for PDF export
             </Button>
           )}
         </div>
