@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -61,9 +62,9 @@ export function AuthForm({ mode }: { mode: Mode }) {
         </form>
         <p className="mt-4 text-center text-sm text-muted-foreground">
           {mode === 'login' ? (
-            <><a href="/signup" className="underline">Create an account</a></>
+            <Link href="/signup" className="underline">Create an account</Link>
           ) : (
-            <><a href="/login" className="underline">Already have an account?</a></>
+            <Link href="/login" className="underline">Already have an account?</Link>
           )}
         </p>
       </CardContent>
