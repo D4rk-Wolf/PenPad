@@ -15,12 +15,20 @@ export function deriveSeverity(cvssScore: number): Severity {
   return 'info'
 }
 
-export const SEVERITY_COLOURS: Record<Severity, string> = {
-  critical: 'bg-red-600 text-white',
-  high:     'bg-orange-500 text-white',
-  medium:   'bg-yellow-500 text-black',
-  low:      'bg-blue-500 text-white',
-  info:     'bg-gray-500 text-white',
+export const SEVERITY_COLOURS: Record<string, string> = {
+  critical: 'bg-red-100 text-red-800',
+  high: 'bg-orange-50 text-orange-800',
+  medium: 'bg-yellow-50 text-yellow-800',
+  low: 'bg-blue-50 text-blue-800',
+  info: 'bg-slate-100 text-slate-600',
+}
+
+export const SEVERITY_BORDER_COLOURS: Record<string, string> = {
+  critical: 'border-l-red-500',
+  high: 'border-l-orange-400',
+  medium: 'border-l-yellow-400',
+  low: 'border-l-blue-400',
+  info: 'border-l-slate-300',
 }
 
 export const FREE_REPORT_LIMIT = 3
