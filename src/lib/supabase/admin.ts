@@ -1,13 +1,16 @@
 import { createClient } from '@supabase/supabase-js'
+import type { Database } from '@/lib/db/database.types'
 
-let _client: ReturnType<typeof createClient> | null = null
+type AdminClient = ReturnType<typeof createClient<Database>>
 
-export function adminDb() {
+let _client: AdminClient | null = null
+
+export function adminDb(): AdminClient {
   if (!_client) {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL
     const key = process.env.SUPABASE_SERVICE_ROLE_KEY
     if (!url || !key) throw new Error('Missing Supabase admin env vars')
-    _client = createClient(url, key)
+    _client = createClient<Database>(url, key)
   }
   return _client
 }
