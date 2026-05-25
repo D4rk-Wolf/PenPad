@@ -3,22 +3,23 @@
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { deleteReport } from '@/app/actions/reports'
 import type { Report } from '@/lib/db/schema'
 
 export function ReportCard({ report }: { report: Report }) {
   return (
-    <Card>
+    <Card className="hover:shadow-sm transition-shadow">
       <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
         <CardTitle className="text-base font-semibold">
           <Link href={`/reports/${report.id}`} className="hover:underline">
             {report.clientName}
           </Link>
         </CardTitle>
-        <Badge variant={report.status === 'final' ? 'default' : 'secondary'}>
-          {report.status}
-        </Badge>
+        {report.status === 'final' ? (
+          <span className="inline-flex items-center rounded-full bg-green-100 text-green-700 px-2 py-0.5 text-xs font-medium">Final</span>
+        ) : (
+          <span className="inline-flex items-center rounded-full bg-slate-100 text-slate-600 px-2 py-0.5 text-xs font-medium">Draft</span>
+        )}
       </CardHeader>
       <CardContent>
         {report.scope && (

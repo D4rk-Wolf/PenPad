@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { deleteFinding } from '@/app/actions/findings'
 import { saveTemplate } from '@/app/actions/templates'
-import { SEVERITY_COLOURS } from '@/lib/utils'
+import { SEVERITY_COLOURS, SEVERITY_BORDER_COLOURS } from '@/lib/utils'
 import type { Finding } from '@/lib/db/schema'
 import type { Severity } from '@/lib/utils'
 
@@ -21,7 +21,7 @@ export function FindingCard({
 
   return (
     <Card>
-      <CardHeader className="pb-2">
+      <CardHeader className={`pb-2 border-l-4 ${SEVERITY_BORDER_COLOURS[severity] ?? 'border-l-slate-300'} pl-4`}>
         <div className="flex items-start justify-between gap-2">
           <CardTitle className="text-sm font-semibold">{finding.title}</CardTitle>
           <div className="flex items-center gap-2 shrink-0">
@@ -33,6 +33,9 @@ export function FindingCard({
             </span>
           </div>
         </div>
+        {(finding as any).affectedComponent && (
+          <p className="text-xs font-mono text-muted-foreground mt-1">{(finding as any).affectedComponent}</p>
+        )}
       </CardHeader>
       <CardContent className="space-y-2 text-sm">
         {finding.description && (

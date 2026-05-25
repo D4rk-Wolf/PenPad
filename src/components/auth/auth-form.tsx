@@ -39,7 +39,14 @@ export function AuthForm({ mode }: { mode: Mode }) {
   }
 
   return (
-    <Card className="w-full max-w-sm">
+    <>
+      <div className="flex justify-center mb-6">
+        <div className="flex items-center gap-2">
+          <div className="w-2.5 h-2.5 rounded-full bg-primary" />
+          <span className="text-base font-bold tracking-tight">PenPad</span>
+        </div>
+      </div>
+      <Card className="w-full max-w-sm shadow-sm">
       <CardHeader>
         <CardTitle>{mode === 'login' ? 'Sign in' : 'Create account'}</CardTitle>
       </CardHeader>
@@ -69,5 +76,6 @@ export function AuthForm({ mode }: { mode: Mode }) {
         </p>
       </CardContent>
     </Card>
+    </>
   )
 }
