@@ -41,7 +41,7 @@ export async function createFinding(reportId: string, formData: FormData) {
     report_id:      reportId,
     title:          formData.get('title') as string,
     description:    formData.get('description') as string || null,
-    cvss_score:     cvssScore.toFixed(1),
+    cvss_score:     parseFloat(cvssScore.toFixed(1)),
     severity:       deriveSeverity(cvssScore),
     impact:         formData.get('impact') as string || null,
     recommendation: formData.get('recommendation') as string || null,
@@ -61,7 +61,7 @@ export async function updateFinding(findingId: string, reportId: string, formDat
     .update({
       title:          formData.get('title') as string,
       description:    formData.get('description') as string || null,
-      cvss_score:     cvssScore.toFixed(1),
+      cvss_score:     parseFloat(cvssScore.toFixed(1)),
       severity:       deriveSeverity(cvssScore),
       impact:         formData.get('impact') as string || null,
       recommendation: formData.get('recommendation') as string || null,
