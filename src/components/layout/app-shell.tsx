@@ -15,7 +15,6 @@ export function AppShell({ user, signOut, children }: AppShellProps) {
 
   return (
     <div className="flex h-screen bg-muted overflow-hidden">
-      <MobileHeader onMenuClick={() => setSidebarOpen(true)} />
       <Sidebar
         user={user}
         signOut={signOut}
@@ -23,6 +22,7 @@ export function AppShell({ user, signOut, children }: AppShellProps) {
         onClose={() => setSidebarOpen(false)}
       />
       <div className="flex flex-col flex-1 overflow-hidden">
+        <MobileHeader onMenuClick={() => setSidebarOpen(true)} />
         <main className="flex-1 overflow-y-auto p-4 md:p-6">
           {children}
         </main>
