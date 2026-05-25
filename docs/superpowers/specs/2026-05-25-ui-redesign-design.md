@@ -7,6 +7,7 @@ Replace the default shadcn scaffold look with a deliberate Clean Enterprise aest
 ## Direction
 
 **Clean Enterprise.** Light mode default with dark mode toggle. Deep blue primary. Inter font. Left sidebar for app navigation. Severity colours are semantic (red/orange/yellow/blue/slate). Mobile sidebar collapses to a drawer.
+**Clean Enterprise.** Light mode. Deep blue primary. Inter font. Left sidebar for app navigation. Severity colours are semantic (red/orange/yellow/blue/slate). No dark mode in this pass.
 
 ---
 
@@ -266,6 +267,10 @@ Each page has:
 | `src/app/globals.css` | Replace colour tokens with blue-primary palette; add `.dark {}` tokens |
 | `src/lib/utils.ts` | Update `SEVERITY_COLOURS` to Tailwind bg/text classes; add `SEVERITY_BORDER_COLOURS` |
 | `src/app/(app)/layout.tsx` | Replace top nav with left sidebar; add mobile header + drawer behaviour |
+| `src/app/layout.tsx` | Fix metadata title/description; swap Geist Sans → Inter |
+| `src/app/globals.css` | Replace colour tokens with blue-primary palette |
+| `src/lib/utils.ts` | Update `SEVERITY_COLOURS` to Tailwind bg/text classes |
+| `src/app/(app)/layout.tsx` | Replace top nav with left sidebar |
 | `src/app/page.tsx` | Rewrite landing page |
 | `src/components/reports/report-card.tsx` | Polish: status badge colour, hover shadow |
 | `src/components/findings/finding-card.tsx` | Add severity left border stripe |
@@ -285,3 +290,8 @@ Each page has:
 - Animation or transitions beyond `transition-shadow`
 - Remediation status tracking (re-test workflow — separate feature)
 - `prefers-color-scheme` auto dark mode (explicit toggle only)
+- Dark mode toggle
+- Responsive / mobile layout
+- Custom logo/icon asset
+- Animation or transitions beyond `transition-shadow`
+- Changes to PDF export styling
