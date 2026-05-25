@@ -36,8 +36,23 @@ export const subscriptions = pgTable('subscriptions', {
   updatedAt:            timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 })
 
-export type Report      = typeof reports.$inferSelect
-export type NewReport   = typeof reports.$inferInsert
-export type Finding     = typeof findings.$inferSelect
-export type NewFinding  = typeof findings.$inferInsert
-export type Subscription = typeof subscriptions.$inferSelect
+export const findingTemplates = pgTable('finding_templates', {
+  id:             uuid('id').primaryKey().defaultRandom(),
+  userId:         uuid('user_id').notNull(),
+  title:          text('title').notNull(),
+  description:    text('description'),
+  cvssScore:      numeric('cvss_score', { precision: 3, scale: 1 }),
+  severity:       text('severity'),
+  impact:         text('impact'),
+  recommendation: text('recommendation'),
+  evidence:       text('evidence'),
+  createdAt:      timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+export type Report             = typeof reports.$inferSelect
+export type NewReport          = typeof reports.$inferInsert
+export type Finding            = typeof findings.$inferSelect
+export type NewFinding         = typeof findings.$inferInsert
+export type Subscription       = typeof subscriptions.$inferSelect
+export type FindingTemplate    = typeof findingTemplates.$inferSelect
+export type NewFindingTemplate = typeof findingTemplates.$inferInsert
