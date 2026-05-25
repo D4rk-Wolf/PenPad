@@ -41,7 +41,7 @@ export async function saveTemplate(findingId: string) {
     user_id:        user.id,
     title:          f.title,
     description:    f.description,
-    cvss_score:     f.cvssScore,
+    cvss_score:     f.cvssScore != null ? parseFloat(f.cvssScore) : null,
     severity:       f.severity,
     impact:         f.impact,
     recommendation: f.recommendation,
