@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDF Combined Design</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; color: #0f172a; padding: 24px; }
+.page-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+.page-sub   { font-size: 13px; color: #64748b; margin-bottom: 28px; }
+.layout { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start; }
+
+/* A4 paper */
+.paper {
+  background: #fff;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.14);
+  border-radius: 3px;
+  width: 100%;
+  aspect-ratio: 210/297;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Times New Roman', Georgia, serif;
+}
+
+/* Header band */
+.band {
+  background: #1d4ed8;
+  padding: 20px 28px 18px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+.band-logo {
+  display: flex; align-items: center; gap: 7px;
+  color: rgba(255,255,255,0.85); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.08em; font-family: 'Inter', system-ui, sans-serif;
+}
+.band-dot { width: 7px; height: 7px; background: #fff; border-radius: 50%; }
+.band-right {
+  font-size: 8px; color: rgba(255,255,255,0.6); font-family: 'Inter', system-ui, sans-serif;
+  text-align: right; letter-spacing: 0.06em; text-transform: uppercase; line-height: 1.6;
+}
+
+/* Cover body */
+.cover-body {
+  flex: 1;
+  padding: 24px 28px 0;
+  display: flex;
+  flex-direction: column;
+}
+.eyebrow {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+}
+.eyebrow-rule { width: 18px; height: 2px; background: #2563eb; }
+.eyebrow-text {
+  font-size: 7px; font-weight: 700; color: #2563eb;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+.cover-title {
+  font-size: 20px; font-weight: 800; color: #0f172a; line-height: 1.2;
+  margin-bottom: 6px; font-family: 'Inter', system-ui, sans-serif;
+}
+.cover-client {
+  font-size: 13px; color: #2563eb; font-weight: 700; margin-bottom: 14px;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+.divider { height: 1px; background: #e2e8f0; margin-bottom: 14px; }
+.meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; margin-bottom: 16px; }
+.meta-item {}
+.meta-label {
+  font-size: 7px; font-weight: 700; color: #94a3b8; letter-spacing: 0.07em;
+  text-transform: uppercase; font-family: 'Inter', system-ui, sans-serif; margin-bottom: 1px;
+}
+.meta-value {
+  font-size: 9px; color: #0f172a; font-weight: 600;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* Risk overview */
+.risk-heading {
+  font-size: 7px; font-weight: 700; color: #64748b; letter-spacing: 0.08em;
+  text-transform: uppercase; font-family: 'Inter', system-ui, sans-serif; margin-bottom: 7px;
+}
+.risk-row { display: flex; gap: 5px; margin-bottom: 14px; }
+.risk-cell {
+  flex: 1; border-radius: 4px; padding: 6px 4px; text-align: center; border: 1px solid;
+}
+.risk-count { font-size: 14px; font-weight: 800; font-family: 'Inter', system-ui, sans-serif; }
+.risk-label {
+  font-size: 6px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+  font-family: 'Inter', system-ui, sans-serif; margin-top: 1px;
+}
+
+/* Confidential banner */
+.confidential-banner {
+  background: #fffbeb; border: 1px solid #fde68a; border-radius: 3px;
+  padding: 5px 8px; margin-bottom: 0;
+  display: flex; align-items: center; gap: 5px;
+}
+.conf-icon { font-size: 8px; }
+.conf-text {
+  font-size: 7px; font-weight: 700; color: #92400e; letter-spacing: 0.04em;
+  text-transform: uppercase; font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* Cover footer */
+.cover-footer {
+  padding: 8px 28px;
+  border-top: 1px solid #e2e8f0;
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: auto;
+}
+.footer-text { font-size: 7px; color: #94a3b8; font-family: 'Inter', system-ui, sans-serif; }
+
+/* ── Finding page preview ── */
+.finding-paper {
+  background: #fff;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.14);
+  border-radius: 3px;
+  width: 100%;
+  overflow: hidden;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+.page-header {
+  background: #fff;
+  border-bottom: 2px solid #1d4ed8;
+  padding: 8px 20px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.page-header-logo { display: flex; align-items: center; gap: 5px; }
+.ph-dot { width: 5px; height: 5px; background: #2563eb; border-radius: 50%; }
+.ph-name { font-size: 9px; font-weight: 800; color: #1e3a8a; }
+.ph-right { font-size: 8px; color: #94a3b8; }
+.page-body { padding: 14px 20px; }
+.section-heading {
+  font-size: 10px; font-weight: 800; color: #0f172a; letter-spacing: -0.01em;
+  margin-bottom: 10px; padding-bottom: 5px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex; align-items: center; gap: 6px;
+}
+.section-num {
+  background: #1d4ed8; color: #fff; width: 16px; height: 16px; border-radius: 50%;
+  font-size: 8px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+}
+.finding-block {
+  border-left: 3px solid; border-radius: 0 4px 4px 0;
+  padding: 8px 10px; margin-bottom: 8px;
+  background: #f8fafc;
+}
+.fb-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; }
+.fb-title { font-size: 10px; font-weight: 700; color: #0f172a; }
+.fb-badge-row { display: flex; align-items: center; gap: 8px; }
+.fb-badge { font-size: 7px; font-weight: 700; padding: 2px 6px; border-radius: 3px; }
+.fb-cvss { font-size: 8px; color: #64748b; }
+.fb-label { font-size: 7px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1px; margin-top: 4px; }
+.fb-value { font-size: 8px; color: #374151; line-height: 1.4; margin-bottom: 2px; }
+.page-footer {
+  border-top: 1px solid #e2e8f0; padding: 5px 20px;
+  display: flex; justify-content: space-between;
+  font-size: 7px; color: #94a3b8;
+}
+</style>
+</head>
+<body>
+
+<div class="page-title">Combined PDF design</div>
+<div class="page-sub">Blue header band (A) + clean whitespace & formal typography (B) + risk overview on cover + confidential banner</div>
+
+<div class="layout">
+
+  <!-- Cover page -->
+  <div>
+    <div style="font-size:10px;font-weight:700;color:#64748b;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px">Cover page</div>
+    <div class="paper">
+      <div class="band">
+        <div class="band-logo">
+          <div class="band-dot"></div>
+          PENPAD
+        </div>
+        <div class="band-right">
+          Penetration Test Report<br>Security Assessment
+        </div>
+      </div>
+      <div class="cover-body">
+        <div style="height:16px"></div>
+        <div class="eyebrow">
+          <div class="eyebrow-rule"></div>
+          <div class="eyebrow-text">Security Assessment Report</div>
+        </div>
+        <div class="cover-title">Penetration Test<br>Report</div>
+        <div class="cover-client">Acme Corp</div>
+        <div class="divider"></div>
+        <div class="meta-grid">
+          <div class="meta-item">
+            <div class="meta-label">Assessment Period</div>
+            <div class="meta-value">12–16 May 2026</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Prepared by</div>
+            <div class="meta-value">Connor Simmons</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Classification</div>
+            <div class="meta-value">Confidential</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Total Findings</div>
+            <div class="meta-value">9</div>
+          </div>
+        </div>
+        <div class="risk-heading">Risk overview</div>
+        <div class="risk-row">
+          <div class="risk-cell" style="background:#fff1f2;border-color:#fecdd3">
+            <div class="risk-count" style="color:#be123c">2</div>
+            <div class="risk-label" style="color:#be123c">Critical</div>
+          </div>
+          <div class="risk-cell" style="background:#fff7ed;border-color:#fed7aa">
+            <div class="risk-count" style="color:#c2410c">3</div>
+            <div class="risk-label" style="color:#c2410c">High</div>
+          </div>
+          <div class="risk-cell" style="background:#fefce8;border-color:#fde68a">
+            <div class="risk-count" style="color:#92400e">1</div>
+            <div class="risk-label" style="color:#92400e">Medium</div>
+          </div>
+          <div class="risk-cell" style="background:#eff6ff;border-color:#bfdbfe">
+            <div class="risk-count" style="color:#1d4ed8">2</div>
+            <div class="risk-label" style="color:#1d4ed8">Low</div>
+          </div>
+          <div class="risk-cell" style="background:#f8fafc;border-color:#e2e8f0">
+            <div class="risk-count" style="color:#64748b">1</div>
+            <div class="risk-label" style="color:#64748b">Info</div>
+          </div>
+        </div>
+        <div class="confidential-banner">
+          <span class="conf-icon">⚠</span>
+          <span class="conf-text">Confidential — For authorised recipients only</span>
+        </div>
+      </div>
+      <div class="cover-footer">
+        <span class="footer-text">Generated by PenPad · penpad.io</span>
+        <span class="footer-text">Page 1</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Finding page -->
+  <div>
+    <div style="font-size:10px;font-weight:700;color:#64748b;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px">Finding pages (multiple per page)</div>
+    <div class="finding-paper">
+      <div class="page-header">
+        <div class="page-header-logo">
+          <div class="ph-dot"></div>
+          <div class="ph-name">PenPad</div>
+        </div>
+        <div class="ph-right">Acme Corp — Penetration Test Report · CONFIDENTIAL</div>
+      </div>
+      <div class="page-body">
+        <div class="section-heading">
+          <div class="section-num">F</div>
+          Findings
+        </div>
+
+        <!-- Finding 1: Critical -->
+        <div class="finding-block" style="border-left-color:#dc2626">
+          <div class="fb-header">
+            <div class="fb-title">SQL Injection</div>
+            <div class="fb-badge-row">
+              <div class="fb-badge" style="background:#fee2e2;color:#991b1b">CRITICAL</div>
+              <div class="fb-cvss">CVSS 9.8</div>
+            </div>
+          </div>
+          <div class="fb-label">Description</div>
+          <div class="fb-value">User-supplied input is incorporated into SQL queries without adequate sanitisation, allowing an attacker to manipulate query logic.</div>
+          <div class="fb-label">Impact</div>
+          <div class="fb-value">Complete database compromise; authentication bypass, data exfiltration possible.</div>
+          <div class="fb-label">Recommendation</div>
+          <div class="fb-value">Use parameterised queries. Apply an ORM that escapes inputs by default.</div>
+        </div>
+
+        <!-- Finding 2: High -->
+        <div class="finding-block" style="border-left-color:#f97316">
+          <div class="fb-header">
+            <div class="fb-title">Broken Access Control</div>
+            <div class="fb-badge-row">
+              <div class="fb-badge" style="background:#fff7ed;color:#9a3412">HIGH</div>
+              <div class="fb-cvss">CVSS 8.1</div>
+            </div>
+          </div>
+          <div class="fb-label">Description</div>
+          <div class="fb-value">The application fails to enforce access restrictions, allowing users to access resources beyond their intended privileges.</div>
+          <div class="fb-label">Recommendation</div>
+          <div class="fb-value">Enforce access control on the server for every request. Apply deny-by-default.</div>
+        </div>
+
+        <!-- Finding 3: Medium -->
+        <div class="finding-block" style="border-left-color:#eab308">
+          <div class="fb-header">
+            <div class="fb-title">Security Misconfiguration</div>
+            <div class="fb-badge-row">
+              <div class="fb-badge" style="background:#fefce8;color:#854d0e">MEDIUM</div>
+              <div class="fb-cvss">CVSS 6.5</div>
+            </div>
+          </div>
+          <div class="fb-label">Description</div>
+          <div class="fb-value">Debug pages and verbose error messages are exposed in the production environment.</div>
+          <div class="fb-label">Recommendation</div>
+          <div class="fb-value">Disable debug features in production. Review configuration against CIS benchmarks.</div>
+        </div>
+      </div>
+      <div class="page-footer">
+        <span>PenPad</span>
+        <span>Acme Corp — Penetration Test Report</span>
+        <span>Page 3</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
