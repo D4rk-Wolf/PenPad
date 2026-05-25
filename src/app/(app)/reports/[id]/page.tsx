@@ -1,10 +1,10 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { db } from '@/lib/db'
-import { reports, subscriptions } from '@/lib/db/schema'
-import { eq, and } from 'drizzle-orm'
 import { createClient } from '@/lib/supabase/server'
+import { adminDb, camel } from '@/lib/supabase/admin'
+import type { Report } from '@/lib/db/schema'
 import { getFindings } from '@/app/actions/findings'
+import { getSubscription } from '@/app/actions/reports'
 import { FindingForm } from '@/components/findings/finding-form'
 import { FindingCard } from '@/components/findings/finding-card'
 import { Button } from '@/components/ui/button'
@@ -14,13 +14,16 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const [report] = await db.select().from(reports)
-    .where(and(eq(reports.id, id), eq(reports.userId, user!.id)))
-  if (!report) notFound()
+  const { data: reportRow } = await adminDb
+    .from('reports')
+    .select('*')
+    .eq('id', id)
+    .eq('user_id', user!.id)
+    .maybeSingle()
+  if (!reportRow) notFound()
+  const report = camel<Report>(reportRow as Record<string, unknown>)
 
-  const findingList = await getFindings(id)
-
-  const [sub] = await db.select().from(subscriptions).where(eq(subscriptions.userId, user!.id))
+  const [findingList, sub] = await Promise.all([getFindings(id), getSubscription(user!.id)])
   const isPro = sub?.status === 'active'
 
   const severityOrder = { critical: 0, high: 1, medium: 2, low: 3, info: 4 }

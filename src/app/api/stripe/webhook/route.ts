@@ -1,17 +1,12 @@
 // src/app/api/stripe/webhook/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { getStripeInstance } from '@/lib/stripe'
-import { db } from '@/lib/db'
-import { subscriptions } from '@/lib/db/schema'
-import { eq } from 'drizzle-orm'
+import { adminDb } from '@/lib/supabase/admin'
 import type Stripe from 'stripe'
 
-// In Stripe API 2026-04-22.dahlia, `current_period_end` lives on each
-// subscription item rather than on the subscription itself. Use the first
-// item's value as the subscription period end.
-function getPeriodEnd(sub: Stripe.Subscription): Date | null {
+function getPeriodEnd(sub: Stripe.Subscription): string | null {
   const ts = sub.items?.data?.[0]?.current_period_end
-  return typeof ts === 'number' ? new Date(ts * 1000) : null
+  return typeof ts === 'number' ? new Date(ts * 1000).toISOString() : null
 }
 
 export async function POST(request: NextRequest) {
@@ -36,37 +31,24 @@ export async function POST(request: NextRequest) {
         checkoutSession.subscription as string
       )
 
-      const periodEnd = getPeriodEnd(subscription)
-
-      await db.insert(subscriptions).values({
-        userId,
-        stripeCustomerId:     checkoutSession.customer as string,
-        stripeSubscriptionId: subscription.id,
-        status:               subscription.status,
-        currentPeriodEnd:     periodEnd,
-      }).onConflictDoUpdate({
-        target: subscriptions.userId,
-        set: {
-          stripeCustomerId:     checkoutSession.customer as string,
-          stripeSubscriptionId: subscription.id,
-          status:               subscription.status,
-          currentPeriodEnd:     periodEnd,
-          updatedAt:            new Date(),
-        },
-      })
+      await adminDb.from('subscriptions').upsert({
+        user_id:               userId,
+        stripe_customer_id:    checkoutSession.customer as string,
+        stripe_subscription_id: subscription.id,
+        status:                subscription.status,
+        current_period_end:    getPeriodEnd(subscription),
+      }, { onConflict: 'user_id' })
       break
     }
 
     case 'customer.subscription.updated':
     case 'customer.subscription.deleted': {
       const sub = event.data.object as Stripe.Subscription
-      await db.update(subscriptions)
-        .set({
-          status:           sub.status,
-          currentPeriodEnd: getPeriodEnd(sub),
-          updatedAt:        new Date(),
-        })
-        .where(eq(subscriptions.stripeSubscriptionId, sub.id))
+      await adminDb.from('subscriptions').update({
+        status:             sub.status,
+        current_period_end: getPeriodEnd(sub),
+        updated_at:         new Date().toISOString(),
+      }).eq('stripe_subscription_id', sub.id)
       break
     }
   }

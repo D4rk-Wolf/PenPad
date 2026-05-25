@@ -1,9 +1,7 @@
 // src/app/(app)/settings/page.tsx
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { db } from '@/lib/db'
-import { subscriptions } from '@/lib/db/schema'
-import { eq } from 'drizzle-orm'
+import { getSubscription } from '@/app/actions/reports'
 import { createCheckoutSession, createCustomerPortalSession } from '@/lib/stripe'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -25,7 +23,7 @@ async function openPortal() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const [sub] = await db.select().from(subscriptions).where(eq(subscriptions.userId, user.id))
+  const sub = await getSubscription(user.id)
   if (!sub?.stripeCustomerId) redirect('/settings')
 
   const portal = await createCustomerPortalSession(sub.stripeCustomerId)
@@ -35,7 +33,7 @@ async function openPortal() {
 export default async function SettingsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  const [sub] = await db.select().from(subscriptions).where(eq(subscriptions.userId, user!.id))
+  const sub = await getSubscription(user!.id)
   const isPro = sub?.status === 'active'
 
   return (

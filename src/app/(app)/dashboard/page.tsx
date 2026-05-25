@@ -1,18 +1,14 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ReportCard } from '@/components/reports/report-card'
-import { getReports } from '@/app/actions/reports'
+import { getReports, getSubscription } from '@/app/actions/reports'
 import { FREE_REPORT_LIMIT } from '@/lib/utils'
-import { db } from '@/lib/db'
-import { subscriptions } from '@/lib/db/schema'
-import { eq } from 'drizzle-orm'
 import { createClient } from '@/lib/supabase/server'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  const reportList = await getReports()
-  const [sub] = await db.select().from(subscriptions).where(eq(subscriptions.userId, user!.id))
+  const [reportList, sub] = await Promise.all([getReports(), getSubscription(user!.id)])
   const isPro = sub?.status === 'active'
   const atFreeLimit = !isPro && reportList.length >= FREE_REPORT_LIMIT
 
