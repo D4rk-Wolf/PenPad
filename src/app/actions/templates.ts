@@ -30,22 +30,14 @@ export async function saveTemplate(findingId: string) {
 
   const { data: findingRow } = await adminDb
     .from('findings')
-    .select('*')
+    .select('*, reports!inner(user_id)')
     .eq('id', findingId)
     .maybeSingle()
-  if (!findingRow) return
-
-  const { data: reportRow } = await adminDb
-    .from('reports')
-    .select('id')
-    .eq('id', findingRow.report_id)
-    .eq('user_id', user.id)
-    .maybeSingle()
-  if (!reportRow) return
+  if (!findingRow || (findingRow.reports as { user_id: string }).user_id !== user.id) return
 
   const f = camel<Finding>(findingRow as Record<string, unknown>)
 
-  await adminDb.from('finding_templates').insert({
+  const { error } = await adminDb.from('finding_templates').insert({
     user_id:        user.id,
     title:          f.title,
     description:    f.description,
@@ -55,6 +47,7 @@ export async function saveTemplate(findingId: string) {
     recommendation: f.recommendation,
     evidence:       f.evidence,
   })
+  if (error) throw new Error(error.message)
 
   revalidatePath('/templates')
 }
@@ -64,11 +57,12 @@ export async function deleteTemplate(templateId: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return
 
-  await adminDb
+  const { error } = await adminDb
     .from('finding_templates')
     .delete()
     .eq('id', templateId)
     .eq('user_id', user.id)
+  if (error) throw new Error(error.message)
 
   revalidatePath('/templates')
 }

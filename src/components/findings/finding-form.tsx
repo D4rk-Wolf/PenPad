@@ -82,9 +82,14 @@ export function FindingForm({
             onChange={e => {
               const val = e.target.value
               if (!val) return
-              const [type, idx] = val.split(':')
-              if (type === 'c') applyTemplate(CURATED_TEMPLATES[Number(idx)])
-              else if (type === 'm') applyTemplate(myTemplates[Number(idx)])
+              const colonIdx = val.indexOf(':')
+              const type = val.slice(0, colonIdx)
+              const key = val.slice(colonIdx + 1)
+              if (type === 'c') applyTemplate(CURATED_TEMPLATES[Number(key)])
+              else if (type === 'm') {
+                const t = myTemplates.find(t => t.id === key)
+                if (t) applyTemplate(t)
+              }
               e.currentTarget.value = ''
             }}
           >
@@ -97,8 +102,8 @@ export function FindingForm({
             <optgroup label="My Templates">
               {isPro
                 ? myTemplates.length > 0
-                  ? myTemplates.map((t, i) => (
-                      <option key={t.id} value={`m:${i}`}>{t.title}</option>
+                  ? myTemplates.map(t => (
+                      <option key={t.id} value={`m:${t.id}`}>{t.title}</option>
                     ))
                   : [<option key="empty" disabled>No saved templates yet</option>]
                 : [<option key="upgrade" disabled>Upgrade to Pro to save templates</option>]

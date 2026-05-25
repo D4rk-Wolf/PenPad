@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getMyTemplates, deleteTemplate } from '@/app/actions/templates'
 import { getSubscription } from '@/app/actions/reports'
@@ -9,7 +10,8 @@ import type { Severity } from '@/lib/utils'
 export default async function TemplatesPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  const sub = await getSubscription(user!.id)
+  if (!user) redirect('/login')
+  const sub = await getSubscription(user.id)
   const isPro = sub?.status === 'active'
   const templates = isPro ? await getMyTemplates() : []
 
