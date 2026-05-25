@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { adminDb, camel } from '@/lib/supabase/admin'
+import { adminDb(), camel } from '@/lib/supabase/admin'
 import type { Report, Subscription } from '@/lib/db/schema'
 import { FREE_REPORT_LIMIT } from '@/lib/utils'
 
@@ -16,7 +16,7 @@ async function getCurrentUserId(): Promise<string> {
 
 export async function getReports(): Promise<Report[]> {
   const userId = await getCurrentUserId()
-  const { data, error } = await adminDb
+  const { data, error } = await adminDb()
     .from('reports')
     .select('*')
     .eq('user_id', userId)
@@ -28,13 +28,13 @@ export async function getReports(): Promise<Report[]> {
 export async function createReport(formData: FormData) {
   const userId = await getCurrentUserId()
 
-  const { data: existing, error: e1 } = await adminDb
+  const { data: existing, error: e1 } = await adminDb()
     .from('reports')
     .select('id')
     .eq('user_id', userId)
   if (e1) throw new Error(e1.message)
 
-  const { data: subRows, error: e2 } = await adminDb
+  const { data: subRows, error: e2 } = await adminDb()
     .from('subscriptions')
     .select('status')
     .eq('user_id', userId)
@@ -47,7 +47,7 @@ export async function createReport(formData: FormData) {
     throw new Error(`Free tier limited to ${FREE_REPORT_LIMIT} reports. Upgrade to Pro for unlimited.`)
   }
 
-  const { data, error } = await adminDb
+  const { data, error } = await adminDb()
     .from('reports')
     .insert({
       user_id:     userId,
@@ -68,7 +68,7 @@ export async function createReport(formData: FormData) {
 
 export async function updateReport(reportId: string, formData: FormData) {
   const userId = await getCurrentUserId()
-  const { error } = await adminDb
+  const { error } = await adminDb()
     .from('reports')
     .update({
       client_name: formData.get('clientName') as string,
@@ -86,7 +86,7 @@ export async function updateReport(reportId: string, formData: FormData) {
 
 export async function deleteReport(reportId: string) {
   const userId = await getCurrentUserId()
-  const { error } = await adminDb
+  const { error } = await adminDb()
     .from('reports')
     .delete()
     .eq('id', reportId)
@@ -97,7 +97,7 @@ export async function deleteReport(reportId: string) {
 }
 
 export async function getSubscription(userId: string): Promise<Subscription | null> {
-  const { data, error } = await adminDb
+  const { data, error } = await adminDb()
     .from('subscriptions')
     .select('*')
     .eq('user_id', userId)

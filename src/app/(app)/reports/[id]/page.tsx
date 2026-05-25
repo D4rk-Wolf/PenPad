@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { adminDb, camel } from '@/lib/supabase/admin'
+import { adminDb(), camel } from '@/lib/supabase/admin'
 import type { Report } from '@/lib/db/schema'
 import { getFindings } from '@/app/actions/findings'
 import { getSubscription } from '@/app/actions/reports'
@@ -15,7 +15,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: reportRow } = await adminDb
+  const { data: reportRow } = await adminDb()
     .from('reports')
     .select('*')
     .eq('id', id)

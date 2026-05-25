@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 
 let _client: ReturnType<typeof createClient> | null = null
 
-function getClient() {
+export function adminDb() {
   if (!_client) {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL
     const key = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -11,12 +11,6 @@ function getClient() {
   }
   return _client
 }
-
-export const adminDb = new Proxy({} as ReturnType<typeof createClient>, {
-  get(_, prop) {
-    return getClient()[prop as keyof ReturnType<typeof createClient>]
-  },
-})
 
 export function camel<T>(row: Record<string, unknown>): T {
   return Object.fromEntries(

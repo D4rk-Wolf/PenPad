@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
         checkoutSession.subscription as string
       )
 
-      await adminDb.from('subscriptions').upsert({
+      await adminDb().from('subscriptions').upsert({
         user_id:               userId,
         stripe_customer_id:    checkoutSession.customer as string,
         stripe_subscription_id: subscription.id,
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     case 'customer.subscription.updated':
     case 'customer.subscription.deleted': {
       const sub = event.data.object as Stripe.Subscription
-      await adminDb.from('subscriptions').update({
+      await adminDb().from('subscriptions').update({
         status:             sub.status,
         current_period_end: getPeriodEnd(sub),
         updated_at:         new Date().toISOString(),
