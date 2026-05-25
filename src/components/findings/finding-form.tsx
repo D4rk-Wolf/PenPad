@@ -13,6 +13,7 @@ import type { FindingTemplate } from '@/lib/db/schema'
 
 type Fields = {
   title: string
+  affectedComponent?: string
   cvssScore: string
   description: string
   impact: string
@@ -21,7 +22,7 @@ type Fields = {
 }
 
 const EMPTY: Fields = {
-  title: '', cvssScore: '0.0', description: '', impact: '', recommendation: '', evidence: '',
+  title: '', affectedComponent: '', cvssScore: '0.0', description: '', impact: '', recommendation: '', evidence: '',
 }
 
 function SubmitButton() {
@@ -55,12 +56,13 @@ export function FindingForm({
 
   function applyTemplate(t: TemplateLike) {
     setFields({
-      title:          t.title,
-      cvssScore:      t.cvssScore != null ? String(t.cvssScore) : '0.0',
-      description:    t.description ?? '',
-      impact:         t.impact ?? '',
-      recommendation: t.recommendation ?? '',
-      evidence:       '',
+      title:             t.title,
+      affectedComponent: '',
+      cvssScore:         t.cvssScore != null ? String(t.cvssScore) : '0.0',
+      description:       t.description ?? '',
+      impact:            t.impact ?? '',
+      recommendation:    t.recommendation ?? '',
+      evidence:          '',
     })
   }
 
@@ -119,6 +121,17 @@ export function FindingForm({
               id="title" name="title" required
               value={fields.title}
               onChange={e => setFields(f => ({ ...f, title: e.target.value }))}
+            />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="affectedComponent">
+              Affected Component <span className="text-xs text-muted-foreground font-normal">(optional)</span>
+            </Label>
+            <Input
+              id="affectedComponent" name="affectedComponent"
+              value={fields.affectedComponent ?? ''}
+              onChange={e => setFields(f => ({ ...f, affectedComponent: e.target.value }))}
+              placeholder="e.g. /api/v1/login, src/auth/middleware.ts"
             />
           </div>
           <div className="grid grid-cols-4 gap-3">
