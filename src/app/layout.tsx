@@ -19,9 +19,6 @@ export const metadata: Metadata = {
 }
 
 const themeScript = `(function(){var t=localStorage.getItem('penpad-theme');if(t==='dark')document.documentElement.classList.add('dark');})()`
-  title: "PenPad",
-  description: "Professional pen test report tool",
-};
 
 export default function RootLayout({
   children,
