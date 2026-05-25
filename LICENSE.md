@@ -18,4 +18,4 @@ The Software is confidential and proprietary. Unauthorised copying, modification
 
 ---
 
-For inquiries, please contact: `legal@d4rkwolf.com`
+For inquiries, please contact: `legal@d4rkwolf.co.uk`

@@ -15,7 +15,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: reportRow } = await adminDb
+  const { data: reportRow } = await adminDb()
     .from('reports')
     .select('*')
     .eq('id', id)

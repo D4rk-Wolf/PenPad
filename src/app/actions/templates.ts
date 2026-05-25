@@ -11,7 +11,7 @@ export async function getMyTemplates(): Promise<FindingTemplate[]> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return []
 
-  const { data, error } = await adminDb
+  const { data, error } = await adminDb()
     .from('finding_templates')
     .select('*')
     .eq('user_id', user.id)
@@ -28,7 +28,7 @@ export async function saveTemplate(findingId: string) {
   const sub = await getSubscription(user.id)
   if (sub?.status !== 'active') return
 
-  const { data: findingRow } = await adminDb
+  const { data: findingRow } = await adminDb()
     .from('findings')
     .select('*, reports!inner(user_id)')
     .eq('id', findingId)
@@ -37,11 +37,11 @@ export async function saveTemplate(findingId: string) {
 
   const f = camel<Finding>(findingRow as Record<string, unknown>)
 
-  const { error } = await adminDb.from('finding_templates').insert({
+  const { error } = await adminDb().from('finding_templates').insert({
     user_id:        user.id,
     title:          f.title,
     description:    f.description,
-    cvss_score:     f.cvssScore,
+    cvss_score:     f.cvssScore != null ? parseFloat(f.cvssScore) : null,
     severity:       f.severity,
     impact:         f.impact,
     recommendation: f.recommendation,
@@ -57,7 +57,7 @@ export async function deleteTemplate(templateId: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return
 
-  const { error } = await adminDb
+  const { error } = await adminDb()
     .from('finding_templates')
     .delete()
     .eq('id', templateId)

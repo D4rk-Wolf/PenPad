@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDF Design Options</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', system-ui, sans-serif; background: #f1f5f9; color: #0f172a; padding: 24px; }
+
+.page-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+.page-sub   { font-size: 13px; color: #64748b; margin-bottom: 28px; }
+
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+/* A4-ish paper */
+.paper {
+  background: #fff;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+  border-radius: 4px;
+  width: 100%;
+  aspect-ratio: 210/297;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: box-shadow 0.15s, outline 0.1s;
+  outline: 3px solid transparent;
+}
+.paper:hover { box-shadow: 0 8px 32px rgba(0,0,0,0.18); }
+.paper.selected { outline: 3px solid #2563eb; }
+
+.option-label {
+  text-align: center;
+  margin-top: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+}
+.option-desc {
+  text-align: center;
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 4px;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+/* ── Option A: Branded header band cover ── */
+.a-cover-band {
+  background: #1d4ed8;
+  padding: 28px 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.a-cover-logo {
+  display: flex; align-items: center; gap: 8px;
+  color: rgba(255,255,255,0.7); font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+  margin-bottom: 20px;
+}
+.a-cover-logo-dot { width: 8px; height: 8px; background: #fff; border-radius: 50%; }
+.a-cover-type {
+  color: rgba(255,255,255,0.7); font-size: 9px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; margin-bottom: 6px;
+}
+.a-cover-title { color: #fff; font-size: 22px; font-weight: 800; line-height: 1.2; }
+.a-cover-body { padding: 24px 28px; flex: 1; }
+.a-client { font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 6px; }
+.a-scope { font-size: 10px; color: #64748b; margin-bottom: 16px; line-height: 1.5; }
+.a-meta-row { display: flex; gap: 28px; margin-bottom: 20px; }
+.a-meta-item { display: flex; flex-direction: column; gap: 2px; }
+.a-meta-label { font-size: 8px; font-weight: 700; color: #94a3b8; letter-spacing: 0.06em; text-transform: uppercase; }
+.a-meta-value { font-size: 11px; color: #0f172a; font-weight: 600; }
+.a-divider { height: 1px; background: #e2e8f0; margin-bottom: 16px; }
+.a-sev-row { display: flex; gap: 8px; margin-bottom: 6px; }
+.a-sev-item {
+  flex: 1; border-radius: 4px; padding: 8px 6px; text-align: center;
+  border: 1px solid;
+}
+.a-sev-count { font-size: 16px; font-weight: 800; }
+.a-sev-label { font-size: 7px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 1px; }
+.a-footer {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: #f8fafc; border-top: 1px solid #e2e8f0;
+  padding: 8px 28px; display: flex; justify-content: space-between; align-items: center;
+}
+.a-footer-text { font-size: 8px; color: #94a3b8; }
+.a-confidential {
+  font-size: 7px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  color: #94a3b8; border: 1px solid #e2e8f0; padding: 2px 6px; border-radius: 10px;
+}
+
+/* ── Option B: Minimal formal ── */
+.b-cover {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 40px 40px 32px;
+}
+.b-top-rule { height: 4px; background: #1d4ed8; }
+.b-logo-area {
+  display: flex; align-items: center; gap: 6px;
+  margin-bottom: 40px; margin-top: 0;
+}
+.b-logo-dot { width: 7px; height: 7px; background: #2563eb; border-radius: 50%; }
+.b-logo-text { font-size: 12px; font-weight: 800; color: #1e3a8a; letter-spacing: -0.01em; }
+.b-cover-content { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+.b-cover-eyebrow {
+  font-size: 8px; font-weight: 700; color: #2563eb; letter-spacing: 0.1em;
+  text-transform: uppercase; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 6px;
+}
+.b-cover-eyebrow::before { content: ''; display: inline-block; width: 20px; height: 2px; background: #2563eb; }
+.b-cover-title { font-size: 26px; font-weight: 800; color: #0f172a; line-height: 1.2; margin-bottom: 20px; }
+.b-divider-line { width: 40px; height: 3px; background: #2563eb; margin-bottom: 20px; }
+.b-client-name { font-size: 15px; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
+.b-meta { font-size: 10px; color: #64748b; margin-bottom: 3px; }
+.b-footer-area { margin-top: 32px; }
+.b-confidential-banner {
+  background: #fff7ed; border: 1px solid #fed7aa;
+  border-radius: 4px; padding: 6px 10px;
+  font-size: 8px; color: #92400e; font-weight: 600; letter-spacing: 0.04em;
+}
+.b-page-footer {
+  display: flex; justify-content: space-between;
+  border-top: 1px solid #e2e8f0; padding-top: 8px; margin-top: 10px;
+  font-size: 8px; color: #94a3b8;
+}
+
+/* Selection overlay */
+.paper.selected::after {
+  content: '✓ Selected';
+  position: absolute; top: 10px; right: 10px;
+  background: #2563eb; color: #fff; font-size: 10px; font-weight: 700;
+  padding: 3px 8px; border-radius: 12px; letter-spacing: 0.03em;
+}
+</style>
+</head>
+<body>
+
+<div class="page-title">PDF design direction</div>
+<div class="page-sub">Click a cover to select — both keep the same finding layout, just different cover + header treatment</div>
+
+<div class="split">
+
+  <!-- Option A -->
+  <div>
+    <div class="paper" id="optA" onclick="pick('a')">
+      <!-- Cover -->
+      <div class="a-cover-band">
+        <div class="a-cover-logo">
+          <div class="a-cover-logo-dot"></div>
+          PENPAD
+        </div>
+        <div class="a-cover-type">Penetration Test Report</div>
+        <div class="a-cover-title">Security Assessment<br>Report</div>
+      </div>
+      <div class="a-cover-body">
+        <div class="a-client">Acme Corp</div>
+        <div class="a-scope">Scope: External web application and API endpoints<br>api.acmecorp.com · app.acmecorp.com</div>
+        <div class="a-meta-row">
+          <div class="a-meta-item">
+            <span class="a-meta-label">Assessment period</span>
+            <span class="a-meta-value">12–16 May 2026</span>
+          </div>
+          <div class="a-meta-item">
+            <span class="a-meta-label">Prepared by</span>
+            <span class="a-meta-value">Connor Simmons</span>
+          </div>
+          <div class="a-meta-item">
+            <span class="a-meta-label">Classification</span>
+            <span class="a-meta-value">Confidential</span>
+          </div>
+        </div>
+        <div class="a-divider"></div>
+        <div style="font-size:9px;font-weight:700;color:#64748b;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px">Risk overview</div>
+        <div class="a-sev-row">
+          <div class="a-sev-item" style="background:#fff1f2;border-color:#fecdd3">
+            <div class="a-sev-count" style="color:#be123c">2</div>
+            <div class="a-sev-label" style="color:#be123c">Critical</div>
+          </div>
+          <div class="a-sev-item" style="background:#fff7ed;border-color:#fed7aa">
+            <div class="a-sev-count" style="color:#c2410c">3</div>
+            <div class="a-sev-label" style="color:#c2410c">High</div>
+          </div>
+          <div class="a-sev-item" style="background:#fefce8;border-color:#fde68a">
+            <div class="a-sev-count" style="color:#92400e">1</div>
+            <div class="a-sev-label" style="color:#92400e">Medium</div>
+          </div>
+          <div class="a-sev-item" style="background:#eff6ff;border-color:#bfdbfe">
+            <div class="a-sev-count" style="color:#1d4ed8">2</div>
+            <div class="a-sev-label" style="color:#1d4ed8">Low</div>
+          </div>
+          <div class="a-sev-item" style="background:#f8fafc;border-color:#e2e8f0">
+            <div class="a-sev-count" style="color:#64748b">1</div>
+            <div class="a-sev-label" style="color:#64748b">Info</div>
+          </div>
+        </div>
+      </div>
+      <div class="a-footer">
+        <span class="a-footer-text">Generated by PenPad · penpad.io</span>
+        <span class="a-confidential">CONFIDENTIAL</span>
+      </div>
+    </div>
+    <div class="option-label">A — Branded cover</div>
+    <div class="option-desc">Blue header band, risk overview on the cover page itself. Client gets key data at a glance before opening the report.</div>
+  </div>
+
+  <!-- Option B -->
+  <div>
+    <div class="paper" id="optB" onclick="pick('b')">
+      <div class="b-top-rule"></div>
+      <div class="b-cover">
+        <div class="b-logo-area">
+          <div class="b-logo-dot"></div>
+          <div class="b-logo-text">PenPad</div>
+        </div>
+        <div class="b-cover-content">
+          <div class="b-cover-eyebrow">Penetration Test Report</div>
+          <div class="b-cover-title">Security Assessment<br>Report</div>
+          <div class="b-divider-line"></div>
+          <div class="b-client-name">Acme Corp</div>
+          <div class="b-meta">Scope: External web application and API endpoints</div>
+          <div class="b-meta">Assessment period: 12–16 May 2026</div>
+          <div class="b-meta">Prepared by: Connor Simmons</div>
+        </div>
+        <div class="b-footer-area">
+          <div class="b-confidential-banner">⚠ CONFIDENTIAL — For authorised recipients only</div>
+          <div class="b-page-footer">
+            <span>PenPad · penpad.io</span>
+            <span>Page 1</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="option-label">B — Formal / minimal</div>
+    <div class="option-desc">Blue top rule and accent line, clean whitespace. More like a Big 4 consulting report. Risk summary on page 2 (exec summary).</div>
+  </div>
+
+</div>
+
+<script>
+function pick(id) {
+  document.querySelectorAll('.paper').forEach(p => p.classList.remove('selected'));
+  document.getElementById('opt' + id.toUpperCase()).classList.add('selected');
+  if (window.__sp_select) window.__sp_select(id, id === 'a' ? 'A — Branded cover' : 'B — Formal/minimal');
+}
+</script>
+
+</body>
+</html>

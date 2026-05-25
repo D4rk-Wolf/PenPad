@@ -14,7 +14,7 @@ Only the latest active development versions of the Software are supported for se
 If you identify a security vulnerability in this application, please report it responsibly by contacting the security team directly. Do **not** open a public GitHub issue, as this software is proprietary and confidential.
 
 Please send security reports to:
-- **Email**: `security@d4rkwolf.com`
+- **Email**: `security@d4rkwolf.co.uk`
 
 Please include the following details in your report:
 - A description of the vulnerability and its potential impact.

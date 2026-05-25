@@ -11,7 +11,7 @@ async function assertReportOwner(reportId: string): Promise<string> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Unauthenticated')
 
-  const { data } = await adminDb
+  const { data } = await adminDb()
     .from('reports')
     .select('id')
     .eq('id', reportId)
@@ -23,7 +23,7 @@ async function assertReportOwner(reportId: string): Promise<string> {
 
 export async function getFindings(reportId: string): Promise<Finding[]> {
   await assertReportOwner(reportId)
-  const { data, error } = await adminDb
+  const { data, error } = await adminDb()
     .from('findings')
     .select('*')
     .eq('report_id', reportId)
@@ -37,11 +37,11 @@ export async function createFinding(reportId: string, formData: FormData) {
   await assertReportOwner(reportId)
   const cvssScore = parseFloat(formData.get('cvssScore') as string) || 0
 
-  const { error } = await adminDb.from('findings').insert({
+  const { error } = await adminDb().from('findings').insert({
     report_id:      reportId,
     title:          formData.get('title') as string,
     description:    formData.get('description') as string || null,
-    cvss_score:     cvssScore.toFixed(1),
+    cvss_score:     parseFloat(cvssScore.toFixed(1)),
     severity:       deriveSeverity(cvssScore),
     impact:         formData.get('impact') as string || null,
     recommendation: formData.get('recommendation') as string || null,
@@ -56,12 +56,12 @@ export async function updateFinding(findingId: string, reportId: string, formDat
   await assertReportOwner(reportId)
   const cvssScore = parseFloat(formData.get('cvssScore') as string) || 0
 
-  const { error } = await adminDb
+  const { error } = await adminDb()
     .from('findings')
     .update({
       title:          formData.get('title') as string,
       description:    formData.get('description') as string || null,
-      cvss_score:     cvssScore.toFixed(1),
+      cvss_score:     parseFloat(cvssScore.toFixed(1)),
       severity:       deriveSeverity(cvssScore),
       impact:         formData.get('impact') as string || null,
       recommendation: formData.get('recommendation') as string || null,
@@ -75,7 +75,7 @@ export async function updateFinding(findingId: string, reportId: string, formDat
 
 export async function deleteFinding(findingId: string, reportId: string) {
   await assertReportOwner(reportId)
-  const { error } = await adminDb.from('findings').delete().eq('id', findingId)
+  const { error } = await adminDb().from('findings').delete().eq('id', findingId)
   if (error) throw new Error(error.message)
   revalidatePath(`/reports/${reportId}`)
 }

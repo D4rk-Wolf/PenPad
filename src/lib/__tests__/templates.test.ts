@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { CURATED_TEMPLATES, type CuratedTemplate } from '@/lib/templates'
+import { CURATED_TEMPLATES } from '@/lib/templates'
 import { deriveSeverity } from '@/lib/utils'
 
 describe('CURATED_TEMPLATES', () => {

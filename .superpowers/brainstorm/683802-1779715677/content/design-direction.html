@@ -1,0 +1,119 @@
+<h2>Which design direction feels right for PenPad?</h2>
+<p class="subtitle">Pick the overall aesthetic — we'll refine everything from this foundation</p>
+
+<div class="cards">
+
+  <!-- Option A: Dark Technical -->
+  <div class="card" data-choice="dark-technical" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0d1117;padding:0;overflow:hidden;border-radius:6px 6px 0 0">
+      <div style="background:#0d1117;padding:16px 20px;border-bottom:1px solid #21262d;display:flex;align-items:center;justify-content:space-between">
+        <span style="color:#e6edf3;font-weight:700;font-size:14px;letter-spacing:0.04em;font-family:monospace">PENPAD</span>
+        <div style="display:flex;gap:12px">
+          <span style="color:#8b949e;font-size:12px">Sign in</span>
+          <span style="background:#238636;color:#fff;font-size:12px;padding:3px 10px;border-radius:4px">Get started</span>
+        </div>
+      </div>
+      <div style="padding:32px 20px 28px">
+        <div style="display:inline-block;background:#1f2d1f;color:#3fb950;font-size:10px;padding:3px 10px;border-radius:12px;margin-bottom:14px;font-family:monospace">FREE TO START</div>
+        <div style="color:#e6edf3;font-size:20px;font-weight:700;line-height:1.3;margin-bottom:10px">Professional pen test<br>reports in minutes</div>
+        <div style="color:#8b949e;font-size:12px;line-height:1.6;margin-bottom:18px">Log findings, score with CVSS, export client-ready PDF reports. Stop wrestling with Word templates.</div>
+        <div style="display:flex;gap:10px">
+          <span style="background:#238636;color:#fff;font-size:12px;padding:6px 16px;border-radius:5px">Start for free</span>
+          <span style="border:1px solid #30363d;color:#8b949e;font-size:12px;padding:6px 16px;border-radius:5px">See pricing</span>
+        </div>
+        <div style="margin-top:20px;background:#161b22;border:1px solid #21262d;border-radius:6px;padding:12px 14px;font-family:monospace;font-size:11px">
+          <div style="color:#8b949e;margin-bottom:6px">// Latest finding</div>
+          <div style="color:#ff7b72">CRITICAL</div>
+          <div style="color:#e6edf3">SQL Injection — /api/users</div>
+          <div style="color:#8b949e;margin-top:4px">CVSS 9.8 · Remediation pending</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Dark Technical</h3>
+      <p>GitHub-style dark theme. Monospace accents for CVSSscores and findings. Green/red signal colours. Feels native to the terminal crowd.</p>
+    </div>
+  </div>
+
+  <!-- Option B: Clean Enterprise -->
+  <div class="card" data-choice="clean-enterprise" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#ffffff;padding:0;overflow:hidden;border-radius:6px 6px 0 0">
+      <div style="background:#fff;padding:16px 20px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between">
+        <span style="color:#111827;font-weight:700;font-size:14px;letter-spacing:-0.01em">PenPad</span>
+        <div style="display:flex;gap:12px">
+          <span style="color:#6b7280;font-size:12px">Sign in</span>
+          <span style="background:#1d4ed8;color:#fff;font-size:12px;padding:3px 10px;border-radius:5px">Get started</span>
+        </div>
+      </div>
+      <div style="padding:32px 20px 28px">
+        <div style="display:inline-block;background:#eff6ff;color:#1d4ed8;font-size:10px;padding:3px 10px;border-radius:12px;margin-bottom:14px;font-weight:600;letter-spacing:0.04em">FREE TO START</div>
+        <div style="color:#111827;font-size:20px;font-weight:700;line-height:1.3;margin-bottom:10px">Professional pen test<br>reports in minutes</div>
+        <div style="color:#6b7280;font-size:12px;line-height:1.6;margin-bottom:18px">Log findings, score with CVSS, export client-ready PDF reports. Stop wrestling with Word templates.</div>
+        <span style="background:#1d4ed8;color:#fff;font-size:12px;padding:7px 18px;border-radius:6px">Start for free →</span>
+        <div style="margin-top:20px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+          <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:10px 12px">
+            <div style="color:#111827;font-size:18px;font-weight:700">9.8</div>
+            <div style="color:#6b7280;font-size:10px">CVSS Critical</div>
+          </div>
+          <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:10px 12px">
+            <div style="color:#111827;font-size:18px;font-weight:700">47s</div>
+            <div style="color:#6b7280;font-size:10px">Avg report time</div>
+          </div>
+          <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:10px 12px">
+            <div style="color:#111827;font-size:18px;font-weight:700">PDF</div>
+            <div style="color:#6b7280;font-size:10px">One-click export</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Clean Enterprise</h3>
+      <p>Light mode, deep blue accent, Inter-style typography. Feels like Linear or Notion — polished SaaS that you'd feel confident showing a client.</p>
+    </div>
+  </div>
+
+  <!-- Option C: Dark with Red accent -->
+  <div class="card" data-choice="dark-security" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0f0f11;padding:0;overflow:hidden;border-radius:6px 6px 0 0">
+      <div style="background:#0f0f11;padding:16px 20px;border-bottom:1px solid #1e1e24;display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:8px;height:8px;background:#e53e3e;border-radius:50%"></div>
+          <span style="color:#f8f8f2;font-weight:800;font-size:14px;letter-spacing:0.06em">PENPAD</span>
+        </div>
+        <div style="display:flex;gap:12px">
+          <span style="color:#71717a;font-size:12px">Sign in</span>
+          <span style="border:1px solid #e53e3e;color:#e53e3e;font-size:12px;padding:3px 10px;border-radius:4px">Get started</span>
+        </div>
+      </div>
+      <div style="padding:32px 20px 28px">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:14px">
+          <div style="width:6px;height:6px;background:#e53e3e;border-radius:50%"></div>
+          <span style="color:#e53e3e;font-size:10px;font-weight:700;letter-spacing:0.1em">SECURITY REPORTING TOOL</span>
+        </div>
+        <div style="color:#f8f8f2;font-size:20px;font-weight:800;line-height:1.3;margin-bottom:10px">Pen test reports<br><span style="color:#e53e3e">without the overhead</span></div>
+        <div style="color:#71717a;font-size:12px;line-height:1.6;margin-bottom:18px">Log findings, score with CVSS, export client-ready PDF reports. Stop wrestling with Word templates.</div>
+        <span style="background:#e53e3e;color:#fff;font-size:12px;padding:7px 18px;border-radius:4px;font-weight:600">START FREE</span>
+        <div style="margin-top:20px;border:1px solid #1e1e24;border-radius:6px;overflow:hidden">
+          <div style="background:#141416;padding:8px 12px;font-size:10px;color:#71717a;letter-spacing:0.05em;border-bottom:1px solid #1e1e24">FINDING SEVERITY BREAKDOWN</div>
+          <div style="padding:10px 12px;display:flex;gap:6px;align-items:center">
+            <div style="flex:3;height:6px;background:#e53e3e;border-radius:2px"></div>
+            <div style="flex:2;height:6px;background:#f6ad55;border-radius:2px"></div>
+            <div style="flex:2;height:6px;background:#f6e05e;border-radius:2px"></div>
+            <div style="flex:1;height:6px;background:#63b3ed;border-radius:2px"></div>
+          </div>
+          <div style="padding:0 12px 10px;display:flex;gap:12px">
+            <span style="color:#e53e3e;font-size:10px">3 CRIT</span>
+            <span style="color:#f6ad55;font-size:10px">2 HIGH</span>
+            <span style="color:#f6e05e;font-size:10px">2 MED</span>
+            <span style="color:#63b3ed;font-size:10px">1 LOW</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Dark Security</h3>
+      <p>Near-black with red as the primary brand colour. Bold, unapologetic. Signals "serious security tool" immediately. Strong visual identity.</p>
+    </div>
+  </div>
+
+</div>

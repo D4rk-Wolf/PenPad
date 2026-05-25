@@ -16,7 +16,7 @@ export async function GET(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 })
 
-  const { data: subRow } = await adminDb
+  const { data: subRow } = await adminDb()
     .from('subscriptions')
     .select('*')
     .eq('user_id', user.id)
@@ -27,7 +27,7 @@ export async function GET(
     return NextResponse.json({ error: 'Pro subscription required' }, { status: 403 })
   }
 
-  const { data: reportRow } = await adminDb
+  const { data: reportRow } = await adminDb()
     .from('reports')
     .select('*')
     .eq('id', id)
@@ -36,7 +36,7 @@ export async function GET(
   if (!reportRow) return NextResponse.json({ error: 'Not found' }, { status: 404 })
   const report = camel<Report>(reportRow as Record<string, unknown>)
 
-  const { data: findingRows } = await adminDb
+  const { data: findingRows } = await adminDb()
     .from('findings')
     .select('*')
     .eq('report_id', id)

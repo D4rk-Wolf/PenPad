@@ -33,8 +33,8 @@ export function FindingCard({
             </span>
           </div>
         </div>
-        {(finding as any).affectedComponent && (
-          <p className="text-xs font-mono text-muted-foreground mt-1">{(finding as any).affectedComponent}</p>
+        {finding.affectedComponent && (
+          <p className="text-xs font-mono text-muted-foreground mt-1">{finding.affectedComponent}</p>
         )}
       </CardHeader>
       <CardContent className="space-y-2 text-sm">

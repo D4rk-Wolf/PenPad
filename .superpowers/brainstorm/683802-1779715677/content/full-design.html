@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PenPad — Full Design Preview</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #f1f5f9; color: #0f172a; }
+
+  .page-title { padding: 24px 32px 8px; font-size: 18px; font-weight: 700; color: #0f172a; }
+  .page-sub   { padding: 0 32px 24px; font-size: 13px; color: #64748b; }
+  .section    { padding: 0 32px 32px; }
+  .section-label { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; color: #94a3b8; text-transform: uppercase; margin-bottom: 12px; }
+
+  /* ── Landing page mockup ── */
+  .landing {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+  .l-nav {
+    background: #fff;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 0 32px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .l-logo { color: #1e3a8a; font-weight: 800; font-size: 16px; letter-spacing: -0.02em; display: flex; align-items: center; gap: 8px; }
+  .l-logo-dot { width: 8px; height: 8px; background: #2563eb; border-radius: 50%; }
+  .l-nav-links { display: flex; align-items: center; gap: 24px; }
+  .l-nav-link { font-size: 13px; color: #64748b; text-decoration: none; }
+  .l-btn-ghost { font-size: 13px; color: #374151; padding: 6px 14px; border-radius: 7px; border: 1px solid #e2e8f0; background: transparent; cursor: pointer; }
+  .l-btn { font-size: 13px; color: #fff; background: #1d4ed8; padding: 7px 16px; border-radius: 7px; font-weight: 600; border: none; cursor: pointer; }
+  .l-hero { padding: 56px 32px 48px; text-align: center; background: linear-gradient(180deg, #fff 0%, #f8faff 100%); }
+  .l-badge { display: inline-block; background: #eff6ff; color: #1d4ed8; font-size: 11px; font-weight: 600; padding: 4px 12px; border-radius: 20px; margin-bottom: 20px; letter-spacing: 0.03em; }
+  .l-h1 { font-size: 36px; font-weight: 800; line-height: 1.15; letter-spacing: -0.02em; color: #0f172a; margin-bottom: 16px; }
+  .l-h1 span { color: #2563eb; }
+  .l-sub { font-size: 16px; color: #64748b; line-height: 1.6; max-width: 480px; margin: 0 auto 28px; }
+  .l-cta { display: flex; gap: 12px; justify-content: center; }
+  .l-cta-primary { background: #1d4ed8; color: #fff; font-size: 14px; font-weight: 600; padding: 10px 24px; border-radius: 8px; border: none; cursor: pointer; }
+  .l-cta-secondary { background: transparent; color: #374151; font-size: 14px; padding: 10px 24px; border-radius: 8px; border: 1px solid #e2e8f0; cursor: pointer; }
+  .l-features { padding: 0 32px 40px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .l-feat { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px; }
+  .l-feat-icon { width: 32px; height: 32px; background: #eff6ff; border-radius: 8px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .l-feat h3 { font-size: 13px; font-weight: 700; color: #0f172a; margin-bottom: 6px; }
+  .l-feat p { font-size: 12px; color: #64748b; line-height: 1.5; }
+
+  /* ── App shell mockup ── */
+  .app-shell {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    height: 420px;
+    margin-bottom: 24px;
+  }
+  .sidebar {
+    width: 200px;
+    background: #fff;
+    border-right: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    flex-shrink: 0;
+  }
+  .sb-logo-area {
+    padding: 18px 16px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .sb-logo-dot { width: 8px; height: 8px; background: #2563eb; border-radius: 50%; }
+  .sb-logo-text { color: #1e3a8a; font-weight: 800; font-size: 14px; letter-spacing: -0.02em; }
+  .sb-nav { padding: 12px 8px; flex: 1; }
+  .sb-section-label { font-size: 10px; font-weight: 600; color: #94a3b8; letter-spacing: 0.06em; padding: 0 8px; margin-bottom: 4px; margin-top: 12px; text-transform: uppercase; }
+  .sb-link { display: flex; align-items: center; gap: 8px; padding: 7px 8px; border-radius: 6px; font-size: 12px; color: #64748b; cursor: pointer; margin-bottom: 2px; }
+  .sb-link.active { background: #eff6ff; color: #1d4ed8; font-weight: 600; }
+  .sb-link:hover:not(.active) { background: #f8fafc; }
+  .sb-icon { width: 14px; height: 14px; opacity: 0.6; font-size: 12px; }
+  .sb-link.active .sb-icon { opacity: 1; }
+  .sb-footer {
+    padding: 12px 16px;
+    border-top: 1px solid #f1f5f9;
+  }
+  .sb-user { display: flex; align-items: center; gap: 8px; }
+  .sb-avatar { width: 28px; height: 28px; background: #dbeafe; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #1d4ed8; flex-shrink: 0; }
+  .sb-user-info { flex: 1; min-width: 0; }
+  .sb-user-name { font-size: 11px; font-weight: 600; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sb-user-role { font-size: 10px; color: #94a3b8; }
+
+  /* App main area */
+  .app-main { flex: 1; background: #f8fafc; overflow-y: auto; }
+  .app-topbar { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; }
+  .app-page-title { font-size: 16px; font-weight: 700; color: #0f172a; }
+  .app-page-sub { font-size: 11px; color: #94a3b8; margin-top: 1px; }
+  .app-btn { background: #1d4ed8; color: #fff; font-size: 12px; font-weight: 600; padding: 6px 14px; border-radius: 7px; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+  .app-content { padding: 20px 24px; }
+
+  /* Report cards */
+  .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .report-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; transition: box-shadow 0.15s; }
+  .report-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .rc-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; }
+  .rc-name { font-size: 13px; font-weight: 700; color: #0f172a; }
+  .rc-status { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
+  .rc-status.draft { background: #f1f5f9; color: #64748b; }
+  .rc-status.final { background: #dcfce7; color: #15803d; }
+  .rc-dates { font-size: 11px; color: #94a3b8; margin-bottom: 10px; }
+  .rc-badges { display: flex; gap: 5px; }
+  .sev { font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 20px; letter-spacing: 0.03em; }
+  .sev-crit { background: #fee2e2; color: #991b1b; }
+  .sev-high { background: #fff7ed; color: #9a3412; }
+  .sev-med  { background: #fefce8; color: #854d0e; }
+  .sev-low  { background: #eff6ff; color: #1e40af; }
+  .sev-info { background: #f1f5f9; color: #475569; }
+
+  /* ── Colour palette ── */
+  .palette { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+  .swatch { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .swatch-box { width: 48px; height: 48px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.08); }
+  .swatch-label { font-size: 9px; color: #64748b; text-align: center; line-height: 1.3; }
+
+  /* ── Typography preview ── */
+  .type-row { display: flex; flex-direction: column; gap: 6px; }
+  .type-sample { display: flex; align-items: baseline; gap: 16px; }
+  .type-meta { font-size: 10px; color: #94a3b8; width: 120px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<div class="page-title">PenPad — Clean Enterprise design preview</div>
+<div class="page-sub">Full picture of what the redesign covers. Read-only — no selection needed on this screen.</div>
+
+<!-- Landing Page -->
+<div class="section">
+  <div class="section-label">Landing page</div>
+  <div class="landing">
+    <div class="l-nav">
+      <div class="l-logo">
+        <div class="l-logo-dot"></div>
+        PenPad
+      </div>
+      <div class="l-nav-links">
+        <a class="l-nav-link" href="#">Features</a>
+        <a class="l-nav-link" href="#">Pricing</a>
+        <button class="l-btn-ghost">Sign in</button>
+        <button class="l-btn">Get started free</button>
+      </div>
+    </div>
+    <div class="l-hero">
+      <div class="l-badge">Free to start · No card required</div>
+      <div class="l-h1">Pen test reports that<br><span>look like you wrote them</span></div>
+      <div class="l-sub">Log findings, score with CVSS, and export a client-ready PDF. Stop wrestling with Word templates.</div>
+      <div class="l-cta">
+        <button class="l-cta-primary">Start for free</button>
+        <button class="l-cta-secondary">See pricing →</button>
+      </div>
+    </div>
+    <div class="l-features">
+      <div class="l-feat">
+        <div class="l-feat-icon">⚡</div>
+        <h3>CVSS Scoring</h3>
+        <p>Auto-calculates severity. Critical, High, Medium, Low, or Info — colour-coded throughout.</p>
+      </div>
+      <div class="l-feat">
+        <div class="l-feat-icon">📄</div>
+        <h3>Professional PDFs</h3>
+        <p>One click. Structured report with cover page, exec summary, and per-finding technical detail.</p>
+      </div>
+      <div class="l-feat">
+        <div class="l-feat-icon">📚</div>
+        <h3>Finding Templates</h3>
+        <p>20 curated OWASP findings. Save your own. Pre-fill in seconds, not minutes.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- App Shell -->
+<div class="section">
+  <div class="section-label">App — Dashboard (sidebar layout)</div>
+  <div class="app-shell">
+    <div class="sidebar">
+      <div class="sb-logo-area">
+        <div class="sb-logo-dot"></div>
+        <div class="sb-logo-text">PenPad</div>
+      </div>
+      <div class="sb-nav">
+        <div class="sb-link active">
+          <span class="sb-icon">📋</span> Reports
+        </div>
+        <div class="sb-link">
+          <span class="sb-icon">📌</span> Templates
+        </div>
+        <div class="sb-section-label">Account</div>
+        <div class="sb-link">
+          <span class="sb-icon">⚙️</span> Settings
+        </div>
+      </div>
+      <div class="sb-footer">
+        <div class="sb-user">
+          <div class="sb-avatar">C</div>
+          <div class="sb-user-info">
+            <div class="sb-user-name">connor@d4rkwolf</div>
+            <div class="sb-user-role">Pro · Sign out</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="app-main">
+      <div class="app-topbar">
+        <div>
+          <div class="app-page-title">Reports</div>
+        </div>
+        <button class="app-btn">+ New Report</button>
+      </div>
+      <div class="app-content">
+        <div class="report-grid">
+          <div class="report-card">
+            <div class="rc-header">
+              <div class="rc-name">Acme Corp</div>
+              <div class="rc-status final">Final</div>
+            </div>
+            <div class="rc-dates">12 May – 16 May 2026</div>
+            <div class="rc-badges">
+              <span class="sev sev-crit">2 CRIT</span>
+              <span class="sev sev-high">3 HIGH</span>
+              <span class="sev sev-med">1 MED</span>
+            </div>
+          </div>
+          <div class="report-card">
+            <div class="rc-header">
+              <div class="rc-name">TechStart Ltd</div>
+              <div class="rc-status draft">Draft</div>
+            </div>
+            <div class="rc-dates">1 May – 8 May 2026</div>
+            <div class="rc-badges">
+              <span class="sev sev-high">1 HIGH</span>
+              <span class="sev sev-med">4 MED</span>
+              <span class="sev sev-low">2 LOW</span>
+            </div>
+          </div>
+          <div class="report-card">
+            <div class="rc-header">
+              <div class="rc-name">FinCore API</div>
+              <div class="rc-status draft">Draft</div>
+            </div>
+            <div class="rc-dates">25 Apr – 30 Apr 2026</div>
+            <div class="rc-badges">
+              <span class="sev sev-crit">1 CRIT</span>
+              <span class="sev sev-high">2 HIGH</span>
+              <span class="sev sev-info">3 INFO</span>
+            </div>
+          </div>
+          <div class="report-card" style="border-style:dashed;background:#fafafa;display:flex;align-items:center;justify-content:center;cursor:pointer">
+            <div style="text-align:center;color:#94a3b8">
+              <div style="font-size:22px;margin-bottom:6px">+</div>
+              <div style="font-size:12px">New report</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Colour palette -->
+<div class="section">
+  <div class="section-label">Colour palette</div>
+  <div class="palette">
+    <div class="swatch"><div class="swatch-box" style="background:#1e3a8a"></div><div class="swatch-label">Blue 900<br>Logo</div></div>
+    <div class="swatch"><div class="swatch-box" style="background:#1d4ed8"></div><div class="swatch-label">Blue 700<br>Primary CTA</div></div>
+    <div class="swatch"><div class="swatch-box" style="background:#2563eb"></div><div class="swatch-label">Blue 600<br>Accent</div></div>
+    <div class="swatch"><div class="swatch-box" style="background:#eff6ff"></div><div class="swatch-label">Blue 50<br>Active bg</div></div>
+    <div class="swatch"><div class="swatch-box" style="background:#0f172a"></div><div class="swatch-label">Slate 950<br>Headings</div></div>
+    <div class="swatch"><div class="swatch-box" style="background:#64748b"></div><div class="swatch-label">Slate 500<br>Body text</div></div>
+    <div class="swatch"><div class="swatch-box" style="background:#e2e8f0"></div><div class="swatch-label">Slate 200<br>Borders</div></div>
+    <div class="swatch"><div class="swatch-box" style="background:#f8fafc"></div><div class="swatch-label">Slate 50<br>App bg</div></div>
+    <div class="swatch" style="margin-left:12px"><div class="swatch-box" style="background:#fee2e2;border-color:#fca5a5"></div><div class="swatch-label">Red<br>Critical</div></div>
+    <div class="swatch"><div class="swatch-box" style="background:#fff7ed;border-color:#fdba74"></div><div class="swatch-label">Orange<br>High</div></div>
+    <div class="swatch"><div class="swatch-box" style="background:#fefce8;border-color:#fde68a"></div><div class="swatch-label">Yellow<br>Medium</div></div>
+    <div class="swatch"><div class="swatch-box" style="background:#eff6ff;border-color:#93c5fd"></div><div class="swatch-label">Blue<br>Low</div></div>
+    <div class="swatch"><div class="swatch-box" style="background:#f1f5f9;border-color:#cbd5e1"></div><div class="swatch-label">Slate<br>Info</div></div>
+  </div>
+</div>
+
+<!-- Typography -->
+<div class="section">
+  <div class="section-label">Typography — Inter (replaces Geist)</div>
+  <div class="type-row">
+    <div class="type-sample">
+      <div class="type-meta">Display / H1</div>
+      <div style="font-size:28px;font-weight:800;letter-spacing:-0.02em;color:#0f172a;font-family:'Inter',system-ui,sans-serif">Professional reports</div>
+    </div>
+    <div class="type-sample">
+      <div class="type-meta">Heading / H2</div>
+      <div style="font-size:18px;font-weight:700;letter-spacing:-0.01em;color:#0f172a;font-family:'Inter',system-ui,sans-serif">SQL Injection — Critical</div>
+    </div>
+    <div class="type-sample">
+      <div class="type-meta">Body</div>
+      <div style="font-size:14px;color:#374151;line-height:1.6;font-family:'Inter',system-ui,sans-serif">User-supplied input is incorporated into SQL queries without adequate sanitisation.</div>
+    </div>
+    <div class="type-sample">
+      <div class="type-meta">Caption / Label</div>
+      <div style="font-size:11px;color:#94a3b8;letter-spacing:0.03em;font-family:'Inter',system-ui,sans-serif">CVSS 9.8 · Remediation pending · 12 May 2026</div>
+    </div>
+    <div class="type-sample">
+      <div class="type-meta">Mono (evidence)</div>
+      <div style="font-size:12px;color:#334155;font-family:'JetBrains Mono','Fira Code',monospace;background:#f8fafc;padding:6px 10px;border-radius:5px;border:1px solid #e2e8f0">GET /api/users?id=1' OR '1'='1</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
