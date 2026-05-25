@@ -22,6 +22,7 @@ export const findings = pgTable('findings', {
   impact:         text('impact'),
   recommendation: text('recommendation'),
   evidence:       text('evidence'),
+  affectedComponent: text('affected_component'),
   sortOrder:      integer('sort_order').default(0),
   createdAt:      timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 })

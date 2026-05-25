@@ -46,6 +46,7 @@ export async function createFinding(reportId: string, formData: FormData) {
     impact:         formData.get('impact') as string || null,
     recommendation: formData.get('recommendation') as string || null,
     evidence:       formData.get('evidence') as string || null,
+    affected_component: formData.get('affectedComponent') as string || null,
   })
   if (error) throw new Error(error.message)
   revalidatePath(`/reports/${reportId}`)
@@ -65,6 +66,7 @@ export async function updateFinding(findingId: string, reportId: string, formDat
       impact:         formData.get('impact') as string || null,
       recommendation: formData.get('recommendation') as string || null,
       evidence:       formData.get('evidence') as string || null,
+      affected_component: formData.get('affectedComponent') as string || null,
     })
     .eq('id', findingId)
   if (error) throw new Error(error.message)
