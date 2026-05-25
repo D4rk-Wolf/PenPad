@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import { Shield, FileText, BookOpen } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { cn } from '@/lib/utils'
 
 export default function LandingPage() {
   return (
@@ -18,12 +19,8 @@ export default function LandingPage() {
             <a href="#pricing" className="hover:text-foreground transition-colors">Pricing</a>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/login">Sign in</Link>
-            </Button>
-            <Button size="sm" asChild>
-              <Link href="/signup">Get started free</Link>
-            </Button>
+            <Link href="/login" className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }))}>Sign in</Link>
+            <Link href="/signup" className={cn(buttonVariants({ size: 'sm' }))}>Get started free</Link>
           </div>
         </div>
       </nav>
@@ -41,12 +38,8 @@ export default function LandingPage() {
           Write findings, score vulnerabilities, and export client-ready PDF reports — without fighting a word processor.
         </p>
         <div className="flex items-center gap-3">
-          <Button size="lg" asChild>
-            <Link href="/signup">Start for free</Link>
-          </Button>
-          <Button size="lg" variant="outline" asChild>
-            <a href="#pricing">See pricing →</a>
-          </Button>
+          <Link href="/signup" className={cn(buttonVariants({ size: 'lg' }))}>Start for free</Link>
+          <a href="#pricing" className={cn(buttonVariants({ size: 'lg', variant: 'outline' }))}>See pricing →</a>
         </div>
       </section>
 
@@ -87,9 +80,7 @@ export default function LandingPage() {
             <CardContent className="space-y-2">
               <p className="text-sm text-muted-foreground">✓ PDF export</p>
               <p className="text-sm text-muted-foreground">✓ CVSS scoring</p>
-              <Button variant="outline" className="w-full mt-4" asChild>
-                <Link href="/signup">Get started</Link>
-              </Button>
+              <Link href="/signup" className={cn(buttonVariants({ variant: 'outline' }), 'w-full mt-4')}>Get started</Link>
             </CardContent>
           </Card>
           <Card className="border border-primary/50 shadow-sm">
@@ -103,9 +94,7 @@ export default function LandingPage() {
               <p className="text-sm text-muted-foreground">✓ Everything in Free</p>
               <p className="text-sm text-muted-foreground">✓ Finding templates</p>
               <p className="text-sm text-muted-foreground">✓ Priority support</p>
-              <Button className="w-full mt-4" asChild>
-                <Link href="/signup">Start free trial</Link>
-              </Button>
+              <Link href="/signup" className={cn(buttonVariants(), 'w-full mt-4')}>Start free trial</Link>
             </CardContent>
           </Card>
         </div>
