@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { renderToBuffer } from '@react-pdf/renderer'
 import { createClient } from '@/lib/supabase/server'
-import { adminDb(), camel } from '@/lib/supabase/admin'
+import { adminDb, camel } from '@/lib/supabase/admin'
 import type { Report, Finding, Subscription } from '@/lib/db/schema'
 import { ReportDocument } from '@/components/pdf/report-document'
 

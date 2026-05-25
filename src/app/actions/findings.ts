@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
-import { adminDb(), camel } from '@/lib/supabase/admin'
+import { adminDb, camel } from '@/lib/supabase/admin'
 import type { Finding } from '@/lib/db/schema'
 import { deriveSeverity } from '@/lib/utils'
 

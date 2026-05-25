@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { adminDb(), camel } from '@/lib/supabase/admin'
+import { adminDb, camel } from '@/lib/supabase/admin'
 import type { Report, Subscription } from '@/lib/db/schema'
 import { FREE_REPORT_LIMIT } from '@/lib/utils'
 
