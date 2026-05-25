@@ -1,9 +1,22 @@
 import { createClient } from '@supabase/supabase-js'
 
-export const adminDb = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-)
+let _client: ReturnType<typeof createClient> | null = null
+
+function getClient() {
+  if (!_client) {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+    if (!url || !key) throw new Error('Missing Supabase admin env vars')
+    _client = createClient(url, key)
+  }
+  return _client
+}
+
+export const adminDb = new Proxy({} as ReturnType<typeof createClient>, {
+  get(_, prop) {
+    return getClient()[prop as keyof ReturnType<typeof createClient>]
+  },
+})
 
 export function camel<T>(row: Record<string, unknown>): T {
   return Object.fromEntries(
