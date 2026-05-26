@@ -27,7 +27,8 @@ async function openPortal() {
 export default async function SettingsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  const sub = await getSubscription(user!.id)
+  if (!user) redirect('/login')
+  const sub = await getSubscription(user.id)
   const isPro = sub?.status === 'active'
 
   const NAV_ITEMS = ['Profile', 'Workspace', 'Billing', 'Security', 'API Keys', 'Audit Log', 'Danger Zone']
@@ -55,11 +56,11 @@ export default async function SettingsPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div className="field">
                 <label className="field-label">Email</label>
-                <input className="input" type="email" defaultValue={user!.email ?? ''} disabled style={{ opacity: 0.65 }} />
+                <input className="input" type="email" defaultValue={user.email ?? ''} disabled style={{ opacity: 0.65 }} />
               </div>
               <div className="field">
                 <label className="field-label">Full name <span className="field-optional">optional</span></label>
-                <input className="input" type="text" defaultValue={user!.user_metadata?.full_name ?? ''} placeholder="Jamie Foster" />
+                <input className="input" type="text" defaultValue={user.user_metadata?.full_name ?? ''} placeholder="Jamie Foster" />
               </div>
               <div>
                 <button className="btn btn-outline btn-sm" disabled>Save changes</button>

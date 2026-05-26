@@ -17,19 +17,20 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   const { id } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+  if (!user) notFound()
 
   const { data: reportRow } = await adminDb()
     .from('reports')
     .select('*')
     .eq('id', id)
-    .eq('user_id', user!.id)
+    .eq('user_id', user.id)
     .maybeSingle()
   if (!reportRow) notFound()
   const report = camel<Report>(reportRow as Record<string, unknown>)
 
   const [findingList, sub, myTemplates] = await Promise.all([
     getFindings(id),
-    getSubscription(user!.id),
+    getSubscription(user.id),
     getMyTemplates(),
   ])
   const isPro = sub?.status === 'active'

@@ -27,7 +27,8 @@ export async function proxy(request: NextRequest) {
                      request.nextUrl.pathname.startsWith('/signup')
   const isProtected = request.nextUrl.pathname.startsWith('/dashboard') ||
                       request.nextUrl.pathname.startsWith('/reports') ||
-                      request.nextUrl.pathname.startsWith('/settings')
+                      request.nextUrl.pathname.startsWith('/settings') ||
+                      request.nextUrl.pathname.startsWith('/templates')
 
   if (isProtected && !user) {
     return NextResponse.redirect(new URL('/login', request.url))
@@ -41,5 +42,7 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|api/).*)'],
+  // Exclude static assets and the Stripe webhook (raw body must be untouched).
+  // All other routes, including other /api/* paths, run through session refresh.
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|api/stripe/webhook).*)'],
 }

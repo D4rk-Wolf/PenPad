@@ -69,13 +69,14 @@ export async function updateFinding(findingId: string, reportId: string, formDat
       affected_component: formData.get('affectedComponent') as string || null,
     })
     .eq('id', findingId)
+    .eq('report_id', reportId)
   if (error) throw new Error(error.message)
   revalidatePath(`/reports/${reportId}`)
 }
 
 export async function deleteFinding(findingId: string, reportId: string) {
   await assertReportOwner(reportId)
-  const { error } = await adminDb().from('findings').delete().eq('id', findingId)
+  const { error } = await adminDb().from('findings').delete().eq('id', findingId).eq('report_id', reportId)
   if (error) throw new Error(error.message)
   revalidatePath(`/reports/${reportId}`)
 }

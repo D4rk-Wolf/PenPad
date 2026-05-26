@@ -9,7 +9,7 @@ import type { FindingTemplate, Finding } from '@/lib/db/schema'
 export async function getMyTemplates(): Promise<FindingTemplate[]> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return []
+  if (!user) throw new Error('Unauthenticated')
 
   const { data, error } = await adminDb()
     .from('finding_templates')
@@ -23,10 +23,10 @@ export async function getMyTemplates(): Promise<FindingTemplate[]> {
 export async function saveTemplate(findingId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return
+  if (!user) throw new Error('Unauthenticated')
 
   const sub = await getSubscription(user.id)
-  if (sub?.status !== 'active') return
+  if (sub?.status !== 'active') throw new Error('Pro subscription required')
 
   const { data: findingRow } = await adminDb()
     .from('findings')
@@ -55,7 +55,7 @@ export async function saveTemplate(findingId: string) {
 export async function deleteTemplate(templateId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return
+  if (!user) throw new Error('Unauthenticated')
 
   const { error } = await adminDb()
     .from('finding_templates')

@@ -46,7 +46,14 @@ export async function GET(
     <ReportDocument report={report} findings={findingList} />
   )
 
-  const filename = `penpad-${report.clientName.replace(/\s+/g, '-').toLowerCase()}.pdf`
+  // Strip characters that could break Content-Disposition header parsing
+  const safeClient = report.clientName
+    .replace(/[^a-zA-Z0-9\-_ ]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .toLowerCase()
+    .slice(0, 80)
+  const filename = `penpad-${safeClient || 'report'}.pdf`
 
   return new NextResponse(new Uint8Array(buffer), {
     headers: {
