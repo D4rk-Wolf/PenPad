@@ -16,7 +16,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   if (!user) redirect('/login')
 
   return (
-    <AppShell user={{ email: user.email ?? '' }} signOut={signOut}>
+    <AppShell
+      user={{
+        email: user.email ?? '',
+        name: user.user_metadata?.full_name as string | undefined,
+      }}
+      signOut={signOut}
+    >
       {children}
     </AppShell>
   )

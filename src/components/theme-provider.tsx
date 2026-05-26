@@ -16,14 +16,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   })
 
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', theme === 'dark')
+    document.documentElement.setAttribute('data-theme', theme)
   }, [theme])
 
   function toggleTheme() {
     const next: Theme = theme === 'light' ? 'dark' : 'light'
     setTheme(next)
     localStorage.setItem('penpad-theme', next)
-    document.documentElement.classList.toggle('dark', next === 'dark')
+    document.documentElement.setAttribute('data-theme', next)
   }
 
   return (

@@ -3,12 +3,8 @@
 import { useState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { createFinding } from '@/app/actions/findings'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CURATED_TEMPLATES } from '@/lib/templates'
+import { Field } from '@/components/penpad/ui'
 import type { FindingTemplate } from '@/lib/db/schema'
 
 type Fields = {
@@ -28,9 +24,9 @@ const EMPTY: Fields = {
 function SubmitButton() {
   const { pending } = useFormStatus()
   return (
-    <Button type="submit" size="sm" disabled={pending}>
+    <button type="submit" className="btn btn-accent btn-sm" disabled={pending}>
       {pending ? 'Saving…' : 'Add Finding'}
-    </Button>
+    </button>
   )
 }
 
@@ -72,113 +68,124 @@ export function FindingForm({
   }
 
   return (
-    <Card>
-      <CardHeader><CardTitle className="text-base">Add Finding</CardTitle></CardHeader>
-      <CardContent>
-        <div className="space-y-1 mb-4">
-          <Label htmlFor="template-select">Use template</Label>
-          <select
-            id="template-select"
-            defaultValue=""
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            onChange={e => {
-              const val = e.target.value
-              if (!val) return
-              const colonIdx = val.indexOf(':')
-              const type = val.slice(0, colonIdx)
-              const key = val.slice(colonIdx + 1)
-              if (type === 'c') applyTemplate(CURATED_TEMPLATES[Number(key)])
-              else if (type === 'm') {
-                const t = myTemplates.find(t => t.id === key)
-                if (t) applyTemplate(t)
-              }
-              e.currentTarget.value = ''
-            }}
-          >
-            <option value="">— pick a template —</option>
-            <optgroup label="Curated">
-              {CURATED_TEMPLATES.map((t, i) => (
-                <option key={i} value={`c:${i}`}>{t.title}</option>
-              ))}
-            </optgroup>
-            <optgroup label="My Templates">
-              {isPro
-                ? myTemplates.length > 0
-                  ? myTemplates.map(t => (
-                      <option key={t.id} value={`m:${t.id}`}>{t.title}</option>
-                    ))
-                  : [<option key="empty" disabled>No saved templates yet</option>]
-                : [<option key="upgrade" disabled>Upgrade to Pro to save templates</option>]
-              }
-            </optgroup>
-          </select>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <Field label="Use template">
+        <select
+          className="select"
+          defaultValue=""
+          onChange={e => {
+            const val = e.target.value
+            if (!val) return
+            const colonIdx = val.indexOf(':')
+            const type = val.slice(0, colonIdx)
+            const key = val.slice(colonIdx + 1)
+            if (type === 'c') applyTemplate(CURATED_TEMPLATES[Number(key)])
+            else if (type === 'm') {
+              const t = myTemplates.find(t => t.id === key)
+              if (t) applyTemplate(t)
+            }
+            e.currentTarget.value = ''
+          }}
+        >
+          <option value="">— pick a template —</option>
+          <optgroup label="Curated">
+            {CURATED_TEMPLATES.map((t, i) => (
+              <option key={i} value={`c:${i}`}>{t.title}</option>
+            ))}
+          </optgroup>
+          <optgroup label="My Templates">
+            {isPro
+              ? myTemplates.length > 0
+                ? myTemplates.map(t => (
+                    <option key={t.id} value={`m:${t.id}`}>{t.title}</option>
+                  ))
+                : [<option key="empty" disabled>No saved templates yet</option>]
+              : [<option key="upgrade" disabled>Upgrade to Pro to save templates</option>]
+            }
+          </optgroup>
+        </select>
+      </Field>
+
+      <form action={handleAction} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <Field label="Title">
+          <input
+            className="input"
+            name="title"
+            required
+            value={fields.title}
+            onChange={e => setFields(f => ({ ...f, title: e.target.value }))}
+          />
+        </Field>
+
+        <Field label="Affected component" optional>
+          <input
+            className="input"
+            name="affectedComponent"
+            value={fields.affectedComponent ?? ''}
+            onChange={e => setFields(f => ({ ...f, affectedComponent: e.target.value }))}
+            placeholder="e.g. /api/v1/login"
+          />
+        </Field>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 3fr', gap: '12px' }}>
+          <Field label="CVSS">
+            <input
+              className="input"
+              name="cvssScore"
+              type="number"
+              min="0"
+              max="10"
+              step="0.1"
+              value={fields.cvssScore}
+              onChange={e => setFields(f => ({ ...f, cvssScore: e.target.value }))}
+            />
+          </Field>
+          <Field label="Description">
+            <textarea
+              className="textarea"
+              name="description"
+              rows={2}
+              value={fields.description}
+              onChange={e => setFields(f => ({ ...f, description: e.target.value }))}
+            />
+          </Field>
         </div>
 
-        <form action={handleAction} className="space-y-3">
-          <div className="space-y-1">
-            <Label htmlFor="title">Title *</Label>
-            <Input
-              id="title" name="title" required
-              value={fields.title}
-              onChange={e => setFields(f => ({ ...f, title: e.target.value }))}
-            />
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="affectedComponent">
-              Affected Component <span className="text-xs text-muted-foreground font-normal">(optional)</span>
-            </Label>
-            <Input
-              id="affectedComponent" name="affectedComponent"
-              value={fields.affectedComponent ?? ''}
-              onChange={e => setFields(f => ({ ...f, affectedComponent: e.target.value }))}
-              placeholder="e.g. /api/v1/login, src/auth/middleware.ts"
-            />
-          </div>
-          <div className="grid grid-cols-4 gap-3">
-            <div className="col-span-1 space-y-1">
-              <Label htmlFor="cvssScore">CVSS Score</Label>
-              <Input
-                id="cvssScore" name="cvssScore" type="number" min="0" max="10" step="0.1"
-                value={fields.cvssScore}
-                onChange={e => setFields(f => ({ ...f, cvssScore: e.target.value }))}
-              />
-            </div>
-            <div className="col-span-3 space-y-1">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description" name="description" rows={2}
-                value={fields.description}
-                onChange={e => setFields(f => ({ ...f, description: e.target.value }))}
-              />
-            </div>
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="impact">Impact</Label>
-            <Textarea
-              id="impact" name="impact" rows={2}
-              value={fields.impact}
-              onChange={e => setFields(f => ({ ...f, impact: e.target.value }))}
-            />
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="recommendation">Recommendation</Label>
-            <Textarea
-              id="recommendation" name="recommendation" rows={2}
-              value={fields.recommendation}
-              onChange={e => setFields(f => ({ ...f, recommendation: e.target.value }))}
-            />
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="evidence">Evidence</Label>
-            <Textarea
-              id="evidence" name="evidence" rows={3} placeholder="Paste output, URLs, or notes…"
-              value={fields.evidence}
-              onChange={e => setFields(f => ({ ...f, evidence: e.target.value }))}
-            />
-          </div>
+        <Field label="Impact">
+          <textarea
+            className="textarea"
+            name="impact"
+            rows={2}
+            value={fields.impact}
+            onChange={e => setFields(f => ({ ...f, impact: e.target.value }))}
+          />
+        </Field>
+
+        <Field label="Recommendation">
+          <textarea
+            className="textarea"
+            name="recommendation"
+            rows={2}
+            value={fields.recommendation}
+            onChange={e => setFields(f => ({ ...f, recommendation: e.target.value }))}
+          />
+        </Field>
+
+        <Field label="Evidence" optional>
+          <textarea
+            className="textarea"
+            name="evidence"
+            rows={3}
+            placeholder="Paste output, URLs, or notes…"
+            value={fields.evidence}
+            onChange={e => setFields(f => ({ ...f, evidence: e.target.value }))}
+          />
+        </Field>
+
+        <div>
           <SubmitButton />
-        </form>
-      </CardContent>
-    </Card>
+        </div>
+      </form>
+    </div>
   )
 }

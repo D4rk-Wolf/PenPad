@@ -1,36 +1,49 @@
 import type { Metadata } from 'next'
-import { Inter, Geist_Mono } from 'next/font/google'
-import { ThemeProvider } from '@/components/theme-provider'
+import { IBM_Plex_Sans, IBM_Plex_Mono, IBM_Plex_Serif } from 'next/font/google'
+import Script from 'next/script'
 import './globals.css'
 
-const inter = Inter({
-  variable: '--font-sans',
+const ibmPlexSans = IBM_Plex_Sans({
   subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-sans',
+  display: 'swap',
 })
 
-const geistMono = Geist_Mono({
-  variable: '--font-mono',
+const ibmPlexMono = IBM_Plex_Mono({
   subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  variable: '--font-mono',
+  display: 'swap',
+})
+
+const ibmPlexSerif = IBM_Plex_Serif({
+  subsets: ['latin'],
+  weight: ['500', '600'],
+  variable: '--font-serif',
+  display: 'swap',
 })
 
 export const metadata: Metadata = {
-  title: 'PenPad',
-  description: 'Professional pen test report tool',
+  title: 'PenPad — pen test reports for security professionals',
+  description:
+    'The reporting workbench for working penetration testers. Log findings, score with CVSS v3.1, and ship client-ready PDF reports.',
 }
-
-const themeScript = `(function(){var t=localStorage.getItem('penpad-theme');if(t==='dark')document.documentElement.classList.add('dark');})()`
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${geistMono.variable} h-full antialiased`}>
+    <html
+      lang="en"
+      data-theme="light"
+      className={`${ibmPlexSans.variable} ${ibmPlexMono.variable} ${ibmPlexSerif.variable}`}
+    >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        {/* Runs before paint to apply stored theme without flash */}
+        <Script src="/theme-init.js" strategy="beforeInteractive" />
       </head>
-      <body className="min-h-full flex flex-col">
-        <ThemeProvider>{children}</ThemeProvider>
-      </body>
+      <body>{children}</body>
     </html>
   )
 }

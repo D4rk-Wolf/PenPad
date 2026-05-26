@@ -1,0 +1,1 @@
+(function(){var t=localStorage.getItem('penpad-theme');document.documentElement.setAttribute('data-theme',t==='dark'?'dark':'light');})()

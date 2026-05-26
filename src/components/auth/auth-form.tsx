@@ -4,10 +4,9 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { BrandMark } from '@/components/penpad/brand-mark'
+import { Icons } from '@/components/penpad/icons'
+import { Field } from '@/components/penpad/ui'
 
 type Mode = 'login' | 'signup'
 
@@ -39,43 +38,95 @@ export function AuthForm({ mode }: { mode: Mode }) {
   }
 
   return (
-    <>
-      <div className="flex justify-center mb-6">
-        <div className="flex items-center gap-2">
-          <div className="w-2.5 h-2.5 rounded-full bg-primary" />
-          <span className="text-base font-bold tracking-tight">PenPad</span>
+    <div className="auth-shell">
+      {/* Brand side */}
+      <div className="auth-side">
+        <div className="auth-side-content">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '48px' }}>
+            <BrandMark size={28} />
+            <span style={{ fontWeight: 700, fontSize: '18px', letterSpacing: '-0.01em', color: '#fff' }}>PenPad</span>
+          </div>
+          <h2 className="auth-side-headline">
+            The reporting workbench for{' '}
+            <em>working penetration testers</em>
+          </h2>
+          <p className="auth-side-footer">
+            Log findings. Score with CVSS v3.1. Ship client-ready PDFs.
+          </p>
         </div>
       </div>
-      <Card className="w-full max-w-sm shadow-sm">
-      <CardHeader>
-        <CardTitle>{mode === 'login' ? 'Sign in' : 'Create account'}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" value={email}
-              onChange={e => setEmail(e.target.value)} required />
+
+      {/* Form side */}
+      <div className="auth-form-side">
+        <div className="auth-form">
+          <h2>{mode === 'login' ? 'Welcome back' : 'Create your account'}</h2>
+          <p className="auth-form-sub">
+            {mode === 'login'
+              ? 'Sign in to your PenPad workspace'
+              : 'Start shipping better pen test reports today'}
+          </p>
+
+          {/* OAuth */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
+            <button className="btn btn-outline" style={{ width: '100%', justifyContent: 'center', gap: '8px' }} type="button" disabled>
+              <Icons.GitHub size={16} />
+              Continue with GitHub
+            </button>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input id="password" type="password" value={password}
-              onChange={e => setPassword(e.target.value)} required minLength={8} />
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+            <div className="divider" style={{ flex: 1 }} />
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--fg-muted)' }}>or continue with email</span>
+            <div className="divider" style={{ flex: 1 }} />
           </div>
-          {error && <p className="text-sm text-destructive">{error}</p>}
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? 'Please wait…' : mode === 'login' ? 'Sign in' : 'Create account'}
-          </Button>
-        </form>
-        <p className="mt-4 text-center text-sm text-muted-foreground">
-          {mode === 'login' ? (
-            <Link href="/signup" className="underline">Create an account</Link>
-          ) : (
-            <Link href="/login" className="underline">Already have an account?</Link>
-          )}
-        </p>
-      </CardContent>
-    </Card>
-    </>
+
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <Field label="Email address">
+              <input
+                className="input"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
+                autoComplete="email"
+              />
+            </Field>
+
+            <Field label="Password" hint={mode === 'signup' ? 'At least 8 characters' : undefined}>
+              <input
+                className="input"
+                type="password"
+                placeholder={mode === 'signup' ? 'Create a password' : 'Enter your password'}
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
+                minLength={8}
+                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+              />
+            </Field>
+
+            {error && (
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', padding: '10px 12px', borderRadius: 'var(--radius)', background: 'color-mix(in srgb, var(--crit) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--crit) 25%, transparent)' }}>
+                <Icons.AlertTriangle size={14} style={{ color: 'var(--crit)', flexShrink: 0, marginTop: '1px' }} />
+                <span style={{ fontSize: 'var(--text-sm)', color: 'var(--crit)' }}>{error}</span>
+              </div>
+            )}
+
+            <button type="submit" className="btn btn-accent" style={{ width: '100%', justifyContent: 'center', marginTop: '4px' }} disabled={loading}>
+              {loading ? 'Please wait…' : mode === 'login' ? 'Sign in' : 'Create account'}
+            </button>
+          </form>
+
+          <p style={{ marginTop: '20px', textAlign: 'center', fontSize: 'var(--text-sm)', color: 'var(--fg-muted)' }}>
+            {mode === 'login' ? (
+              <>Don&apos;t have an account?{' '}<Link href="/signup" style={{ color: 'var(--fg)', fontWeight: 500 }}>Sign up free</Link></>
+            ) : (
+              <>Already have an account?{' '}<Link href="/login" style={{ color: 'var(--fg)', fontWeight: 500 }}>Sign in</Link></>
+            )}
+          </p>
+        </div>
+      </div>
+    </div>
   )
 }

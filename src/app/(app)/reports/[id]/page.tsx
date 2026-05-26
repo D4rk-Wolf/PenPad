@@ -8,7 +8,10 @@ import { getSubscription } from '@/app/actions/reports'
 import { getMyTemplates } from '@/app/actions/templates'
 import { FindingForm } from '@/components/findings/finding-form'
 import { FindingCard } from '@/components/findings/finding-card'
-import { Button } from '@/components/ui/button'
+import { Icons } from '@/components/penpad/icons'
+import { SeverityPill, CvssGauge, StatusPill, SeverityCounts } from '@/components/penpad/ui'
+
+const SEV_ORDER = { critical: 0, high: 1, medium: 2, low: 3, info: 4 }
 
 export default async function ReportPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -31,47 +34,76 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   ])
   const isPro = sub?.status === 'active'
 
-  const severityOrder = { critical: 0, high: 1, medium: 2, low: 3, info: 4 }
   const sorted = [...findingList].sort((a, b) =>
-    (severityOrder[a.severity as keyof typeof severityOrder] ?? 4) -
-    (severityOrder[b.severity as keyof typeof severityOrder] ?? 4)
+    (SEV_ORDER[a.severity as keyof typeof SEV_ORDER] ?? 4) -
+    (SEV_ORDER[b.severity as keyof typeof SEV_ORDER] ?? 4)
   )
 
+  const counts = sorted.reduce<Record<string, number>>((acc, f) => {
+    const s = f.severity ?? 'info'
+    acc[s] = (acc[s] ?? 0) + 1
+    return acc
+  }, {})
+
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
+    <div className="content">
+      {/* Page header */}
+      <div className="page-header">
         <div>
-          <h1 className="text-2xl font-bold">{report.clientName}</h1>
-          {report.scope && <p className="text-sm text-muted-foreground mt-1">{report.scope}</p>}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+            <Link href="/dashboard" style={{ color: 'var(--fg-muted)', fontSize: 'var(--text-sm)', textDecoration: 'none' }}>Reports</Link>
+            <Icons.ChevronRight size={12} style={{ color: 'var(--fg-subtle)' }} />
+            <span style={{ fontSize: 'var(--text-sm)', color: 'var(--fg-muted)' }}>{report.clientName}</span>
+          </div>
+          <h1 className="page-title">{report.clientName}</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '4px' }}>
+            <StatusPill status={(report.status ?? 'draft') as 'draft' | 'active' | 'final'} />
+            {report.scope && <span style={{ fontSize: 'var(--text-sm)', color: 'var(--fg-muted)' }}>{report.scope}</span>}
+            <SeverityCounts counts={counts} />
+          </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="page-header-actions">
           {isPro ? (
-            <Button render={<Link href={`/reports/${id}/export`} target="_blank" />}>
+            <Link href={`/reports/${id}/export`} target="_blank" className="btn btn-outline btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Icons.Download size={14} />
               Export PDF
-            </Button>
+            </Link>
           ) : (
-            <Button variant="outline" render={<Link href="/settings" />}>
-              Upgrade for PDF export
-            </Button>
+            <Link href="/settings" className="btn btn-outline btn-sm">Upgrade for PDF</Link>
           )}
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      {/* 2-col layout: findings list + add form */}
+      <div className="layout-2col">
+        {/* Findings */}
         <div>
-          <h2 className="text-lg font-semibold mb-4">Findings ({findingList.length})</h2>
-          <div className="space-y-3">
-            {sorted.map(finding => (
-              <FindingCard key={finding.id} finding={finding} reportId={id} isPro={isPro} />
-            ))}
-            {findingList.length === 0 && (
-              <p className="text-muted-foreground text-sm">No findings yet.</p>
-            )}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+            <h2 style={{ fontWeight: 600, fontSize: 'var(--text-base)', margin: 0 }}>
+              Findings <span style={{ color: 'var(--fg-muted)', fontWeight: 400 }}>({findingList.length})</span>
+            </h2>
           </div>
+          {sorted.length === 0 ? (
+            <div className="empty">
+              <div className="empty-icon"><Icons.Bug size={22} /></div>
+              <p className="empty-title">No findings yet</p>
+              <p className="empty-subtitle">Add your first finding using the form.</p>
+            </div>
+          ) : (
+            <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
+              {sorted.map(finding => (
+                <FindingCard key={finding.id} finding={finding} reportId={id} isPro={isPro} />
+              ))}
+            </div>
+          )}
         </div>
+
+        {/* Add finding form */}
         <div>
-          <h2 className="text-lg font-semibold mb-4">Add Finding</h2>
-          <FindingForm reportId={id} myTemplates={myTemplates} isPro={isPro} />
+          <h2 style={{ fontWeight: 600, fontSize: 'var(--text-base)', margin: '0 0 12px' }}>Add Finding</h2>
+          <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden', padding: '20px' }}>
+            <FindingForm reportId={id} myTemplates={myTemplates} isPro={isPro} />
+          </div>
         </div>
       </div>
     </div>
