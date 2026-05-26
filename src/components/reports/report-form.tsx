@@ -2,48 +2,42 @@
 
 import { useFormStatus } from 'react-dom'
 import { createReport } from '@/app/actions/reports'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Field } from '@/components/penpad/ui'
 
 function SubmitButton() {
   const { pending } = useFormStatus()
-  return <Button type="submit" disabled={pending}>{pending ? 'Creating…' : 'Create Report'}</Button>
+  return (
+    <button type="submit" className="btn btn-accent" disabled={pending}>
+      {pending ? 'Creating…' : 'Create Report'}
+    </button>
+  )
 }
 
 export function ReportForm() {
   return (
-    <Card className="max-w-lg">
-      <CardHeader><CardTitle>New Report</CardTitle></CardHeader>
-      <CardContent>
-        <form action={createReport} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="clientName">Client Name *</Label>
-            <Input id="clientName" name="clientName" required />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="scope">Scope</Label>
-            <Textarea id="scope" name="scope" rows={3} />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="startDate">Start Date</Label>
-              <Input id="startDate" name="startDate" type="date" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="endDate">End Date</Label>
-              <Input id="endDate" name="endDate" type="date" />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="testerName">Tester Name</Label>
-            <Input id="testerName" name="testerName" />
-          </div>
+    <div style={{ maxWidth: '520px', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', padding: '24px', background: 'var(--bg)' }}>
+      <form action={createReport} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <Field label="Client name">
+          <input className="input" name="clientName" required placeholder="e.g. Acme Corp" />
+        </Field>
+        <Field label="Scope" optional>
+          <textarea className="textarea" name="scope" rows={3} placeholder="IP ranges, domains, app URLs…" />
+        </Field>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <Field label="Start date" optional>
+            <input className="input" name="startDate" type="date" />
+          </Field>
+          <Field label="End date" optional>
+            <input className="input" name="endDate" type="date" />
+          </Field>
+        </div>
+        <Field label="Tester name" optional>
+          <input className="input" name="testerName" placeholder="e.g. Jamie Foster" />
+        </Field>
+        <div>
           <SubmitButton />
-        </form>
-      </CardContent>
-    </Card>
+        </div>
+      </form>
+    </div>
   )
 }

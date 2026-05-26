@@ -29,11 +29,11 @@ export default async function TemplatesPage() {
       </div>
 
       {!isPro && (
-        <div style={{ padding: '20px 24px', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', background: 'var(--bg-elev)', display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
+        <div style={{ padding: '20px 24px', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', background: 'var(--bg-elev)', display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
           <Icons.Lock size={18} style={{ color: 'var(--fg-muted)', flexShrink: 0 }} />
           <div>
-            <div style={{ fontWeight: 500, fontSize: 'var(--text-sm)', marginBottom: '2px' }}>Custom templates require Pro</div>
-            <div style={{ fontSize: 'var(--text-sm)', color: 'var(--fg-muted)' }}>Save findings as reusable templates and import them across engagements.</div>
+            <div style={{ fontWeight: 500, fontSize: 'var(--fs-sm)', marginBottom: '2px' }}>Custom templates require Pro</div>
+            <div style={{ fontSize: 'var(--fs-sm)', color: 'var(--fg-muted)' }}>Save findings as reusable templates and import them across engagements.</div>
           </div>
           <Link href="/settings" className="btn btn-accent btn-sm" style={{ marginLeft: 'auto', flexShrink: 0 }}>
             Upgrade to Pro
@@ -45,7 +45,7 @@ export default async function TemplatesPage() {
         <div className="tpl-grid">
           {/* Category sidebar */}
           <div>
-            <div style={{ fontSize: 'var(--text-xs)', fontFamily: 'var(--font-mono)', fontWeight: 500, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--fg-muted)', marginBottom: '8px', padding: '0 10px' }}>
+            <div style={{ fontSize: 'var(--fs-xs)', fontFamily: 'var(--font-mono)', fontWeight: 500, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--fg-muted)', marginBottom: '8px', padding: '0 10px' }}>
               Categories
             </div>
             <div className="tpl-cat-list">
@@ -92,8 +92,8 @@ export default async function TemplatesPage() {
                       <tr key={t.id} className="tbl-row">
                         <td style={{ fontWeight: 500 }}>{t.title}</td>
                         <td><SeverityPill severity={severity as 'critical' | 'high' | 'medium' | 'low' | 'info'} /></td>
-                        <td style={{ color: 'var(--fg-muted)', fontSize: 'var(--text-sm)' }}>—</td>
-                        <td style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-xs)', color: cvss > 0 ? 'var(--fg)' : 'var(--fg-muted)' }}>
+                        <td style={{ color: 'var(--fg-muted)', fontSize: 'var(--fs-sm)' }}>—</td>
+                        <td style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--fs-xs)', color: cvss > 0 ? 'var(--fg)' : 'var(--fg-muted)' }}>
                           {cvss > 0 ? cvss.toFixed(1) : '—'}
                         </td>
                         <td>

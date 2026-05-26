@@ -76,7 +76,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
             <div className="divider" style={{ flex: 1 }} />
-            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--fg-muted)' }}>or continue with email</span>
+            <span style={{ fontSize: 'var(--fs-xs)', color: 'var(--fg-muted)' }}>or continue with email</span>
             <div className="divider" style={{ flex: 1 }} />
           </div>
 
@@ -107,9 +107,9 @@ export function AuthForm({ mode }: { mode: Mode }) {
             </Field>
 
             {error && (
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', padding: '10px 12px', borderRadius: 'var(--radius)', background: 'color-mix(in srgb, var(--crit) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--crit) 25%, transparent)' }}>
-                <Icons.AlertTriangle size={14} style={{ color: 'var(--crit)', flexShrink: 0, marginTop: '1px' }} />
-                <span style={{ fontSize: 'var(--text-sm)', color: 'var(--crit)' }}>{error}</span>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', padding: '10px 12px', borderRadius: 'var(--r-sm)', background: 'color-mix(in srgb, var(--sev-critical) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--sev-critical) 25%, transparent)' }}>
+                <Icons.AlertTriangle size={14} style={{ color: 'var(--sev-critical)', flexShrink: 0, marginTop: '1px' }} />
+                <span style={{ fontSize: 'var(--fs-sm)', color: 'var(--sev-critical)' }}>{error}</span>
               </div>
             )}
 
@@ -118,7 +118,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
             </button>
           </form>
 
-          <p style={{ marginTop: '20px', textAlign: 'center', fontSize: 'var(--text-sm)', color: 'var(--fg-muted)' }}>
+          <p style={{ marginTop: '20px', textAlign: 'center', fontSize: 'var(--fs-sm)', color: 'var(--fg-muted)' }}>
             {mode === 'login' ? (
               <>Don&apos;t have an account?{' '}<Link href="/signup" style={{ color: 'var(--fg)', fontWeight: 500 }}>Sign up free</Link></>
             ) : (

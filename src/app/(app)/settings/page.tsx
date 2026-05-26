@@ -77,10 +77,10 @@ export default async function SettingsPage() {
             <div className="plan-card">
               <div className="plan-card-top">
                 <div>
-                  <div style={{ fontWeight: 600, fontSize: 'var(--text-base)', marginBottom: '2px' }}>
+                  <div style={{ fontWeight: 600, fontSize: 'var(--fs-base)', marginBottom: '2px' }}>
                     {isPro ? 'Pro' : 'Free'} plan
                   </div>
-                  <div style={{ fontSize: 'var(--text-sm)', color: 'var(--fg-muted)' }}>
+                  <div style={{ fontSize: 'var(--fs-sm)', color: 'var(--fg-muted)' }}>
                     {isPro
                       ? `Renews ${sub?.currentPeriodEnd?.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) ?? '—'}`
                       : 'Up to 3 reports · 10 findings each'}
@@ -95,7 +95,7 @@ export default async function SettingsPage() {
               {!isPro && (
                 <div style={{ marginBottom: '16px' }}>
                   <div className="usage-row">
-                    <span style={{ fontSize: 'var(--text-sm)' }}>Reports</span>
+                    <span style={{ fontSize: 'var(--fs-sm)' }}>Reports</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                       <div className="usage-bar">
                         <div className="usage-bar-fill" style={{ width: '33%' }} />
@@ -104,7 +104,7 @@ export default async function SettingsPage() {
                     </div>
                   </div>
                   <div className="usage-row">
-                    <span style={{ fontSize: 'var(--text-sm)' }}>Templates</span>
+                    <span style={{ fontSize: 'var(--fs-sm)' }}>Templates</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                       <div className="usage-bar">
                         <div className="usage-bar-fill" style={{ width: '0%' }} />
@@ -158,9 +158,9 @@ export default async function SettingsPage() {
 
           {/* Danger zone */}
           <div className="settings-section">
-            <h2 className="settings-section-title" style={{ color: 'var(--crit)' }}>Danger zone</h2>
+            <h2 className="settings-section-title" style={{ color: 'var(--sev-critical)' }}>Danger zone</h2>
             <p className="settings-section-sub">These actions are irreversible.</p>
-            <button className="btn btn-outline btn-sm" style={{ color: 'var(--crit)', borderColor: 'color-mix(in srgb, var(--crit) 30%, transparent)', display: 'flex', alignItems: 'center', gap: '6px' }} disabled>
+            <button className="btn btn-outline btn-sm" style={{ color: 'var(--sev-critical)', borderColor: 'color-mix(in srgb, var(--sev-critical) 30%, transparent)', display: 'flex', alignItems: 'center', gap: '6px' }} disabled>
               <Icons.Trash size={13} />
               Delete account
             </button>

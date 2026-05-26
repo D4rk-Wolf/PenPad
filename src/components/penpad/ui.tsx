@@ -137,7 +137,7 @@ export function SeverityCounts({ counts }: { counts: SeverityCountsMap }) {
         <span key={key} className="sev-counts-item">
           <span className="sev-counts-dot" style={{ background: SEV_COLOR[key] }} />
           <span className="sev-counts-num">{counts[key]}</span>
-          <span style={{ color: 'var(--fg-muted)', fontSize: 'var(--text-xs)' }}>{key}</span>
+          <span style={{ color: 'var(--fg-muted)', fontSize: 'var(--fs-xs)' }}>{key}</span>
         </span>
       ))}
     </div>

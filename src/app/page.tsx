@@ -8,7 +8,7 @@ export default function LandingPage() {
       {/* Nav */}
       <nav className="landing-nav">
         <div className="landing-nav-inner">
-          <Link href="/" className="sidebar-brand-link" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
             <BrandMark size={22} />
             <span style={{ fontWeight: 700, fontSize: '15px', letterSpacing: '-0.01em', color: 'var(--fg)' }}>PenPad</span>
           </Link>
@@ -63,7 +63,7 @@ export default function LandingPage() {
               <div style={{ flex: 1, padding: '12px 14px', overflow: 'hidden' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                   <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--fg)' }}>Acme Corp — External Pentest</span>
-                  <span style={{ fontSize: '10px', padding: '2px 7px', borderRadius: '4px', background: 'color-mix(in srgb, var(--warn) 15%, transparent)', color: 'var(--warn)', fontWeight: 500 }}>Active</span>
+                  <span style={{ fontSize: '10px', padding: '2px 7px', borderRadius: '4px', background: 'color-mix(in srgb, var(--sev-medium) 15%, transparent)', color: 'var(--sev-medium)', fontWeight: 500 }}>Active</span>
                 </div>
                 {[
                   { title: 'RCE via Deserialization', sev: 'critical', cvss: '9.8' },
@@ -73,7 +73,7 @@ export default function LandingPage() {
                   { title: 'Reflected XSS in Error Message', sev: 'high', cvss: '7.4' },
                 ].map(({ title, sev, cvss }) => (
                   <div key={title} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '5px 0', borderBottom: '1px solid var(--border)', fontSize: '10px' }}>
-                    <span style={{ padding: '1px 5px', borderRadius: '3px', fontSize: '9px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.03em', background: sev === 'critical' ? 'color-mix(in srgb, var(--crit) 15%, transparent)' : 'color-mix(in srgb, var(--high) 15%, transparent)', color: sev === 'critical' ? 'var(--crit)' : 'var(--high)' }}>{sev}</span>
+                    <span style={{ padding: '1px 5px', borderRadius: '3px', fontSize: '9px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.03em', background: sev === 'critical' ? 'color-mix(in srgb, var(--sev-critical) 15%, transparent)' : 'color-mix(in srgb, var(--sev-high) 15%, transparent)', color: sev === 'critical' ? 'var(--sev-critical)' : 'var(--sev-high)' }}>{sev}</span>
                     <span style={{ flex: 1, color: 'var(--fg)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</span>
                     <span className="mono" style={{ color: 'var(--fg-muted)' }}>{cvss}</span>
                   </div>
@@ -86,12 +86,12 @@ export default function LandingPage() {
 
       {/* Trusted by */}
       <div className="landing-section" style={{ paddingBlock: '24px' }}>
-        <p style={{ textAlign: 'center', fontSize: 'var(--text-xs)', color: 'var(--fg-muted)', letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 500, marginBottom: '16px' }}>
+        <p style={{ textAlign: 'center', fontSize: 'var(--fs-xs)', color: 'var(--fg-muted)', letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 500, marginBottom: '16px' }}>
           Trusted by pentesters at
         </p>
         <div style={{ display: 'flex', gap: '32px', justifyContent: 'center', flexWrap: 'wrap', opacity: 0.45 }}>
           {['D4rkWolf Security', 'Redline Pentest', 'Null Byte Labs', 'HexSec', 'CipherForge'].map(name => (
-            <span key={name} style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--fg)', letterSpacing: '-0.01em' }}>{name}</span>
+            <span key={name} style={{ fontSize: 'var(--fs-sm)', fontWeight: 600, color: 'var(--fg)', letterSpacing: '-0.01em' }}>{name}</span>
           ))}
         </div>
       </div>
@@ -131,10 +131,10 @@ export default function LandingPage() {
             { n: '3', title: 'Score with CVSS', body: 'Set the vector. Severity and CVSS score update automatically.' },
             { n: '4', title: 'Export the PDF', body: 'One click. Professional, client-ready output, every time.' },
           ].map(({ n, title, body }) => (
-            <div key={n} style={{ padding: '24px', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', background: 'var(--bg)' }}>
-              <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--accent)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--text-xs)', fontWeight: 700, marginBottom: '12px' }}>{n}</div>
-              <div style={{ fontWeight: 600, fontSize: 'var(--text-sm)', marginBottom: '6px', color: 'var(--fg)' }}>{title}</div>
-              <div style={{ fontSize: 'var(--text-sm)', color: 'var(--fg-muted)', lineHeight: 1.5 }}>{body}</div>
+            <div key={n} style={{ padding: '24px', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', background: 'var(--bg)' }}>
+              <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--accent)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--fs-xs)', fontWeight: 700, marginBottom: '12px' }}>{n}</div>
+              <div style={{ fontWeight: 600, fontSize: 'var(--fs-sm)', marginBottom: '6px', color: 'var(--fg)' }}>{title}</div>
+              <div style={{ fontSize: 'var(--fs-sm)', color: 'var(--fg-muted)', lineHeight: 1.5 }}>{body}</div>
             </div>
           ))}
         </div>
@@ -142,12 +142,12 @@ export default function LandingPage() {
 
       {/* Testimonial */}
       <section className="landing-section" style={{ maxWidth: '640px' }}>
-        <blockquote style={{ padding: '32px', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', background: 'var(--bg-elev)', position: 'relative' }}>
+        <blockquote style={{ padding: '32px', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', background: 'var(--bg-elev)', position: 'relative' }}>
           <span style={{ position: 'absolute', top: '16px', left: '24px', fontSize: '32px', color: 'var(--accent)', fontFamily: 'var(--font-serif)', lineHeight: 1 }}>&ldquo;</span>
-          <p style={{ fontSize: 'var(--text-base)', lineHeight: 1.6, color: 'var(--fg)', marginBottom: '16px', paddingTop: '12px' }}>
+          <p style={{ fontSize: 'var(--fs-base)', lineHeight: 1.6, color: 'var(--fg)', marginBottom: '16px', paddingTop: '12px' }}>
             PenPad cut our report writing time in half. The CVSS scoring and PDF export mean we go from final shell to delivered report in a morning.
           </p>
-          <footer style={{ fontSize: 'var(--text-sm)', color: 'var(--fg-muted)' }}>
+          <footer style={{ fontSize: 'var(--fs-sm)', color: 'var(--fg-muted)' }}>
             <strong style={{ color: 'var(--fg)' }}>Alex M.</strong> &nbsp;·&nbsp; Lead Penetration Tester, Redline Pentest
           </footer>
         </blockquote>
@@ -159,33 +159,33 @@ export default function LandingPage() {
         <h2 className="landing-section-title">Simple, transparent pricing</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', maxWidth: '680px', margin: '40px auto 0' }}>
           {/* Free */}
-          <div style={{ padding: '28px', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', background: 'var(--bg)' }}>
-            <div style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--fg)', marginBottom: '8px' }}>Free</div>
+          <div style={{ padding: '28px', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', background: 'var(--bg)' }}>
+            <div style={{ fontSize: 'var(--fs-sm)', fontWeight: 600, color: 'var(--fg)', marginBottom: '8px' }}>Free</div>
             <div style={{ fontSize: '36px', fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--fg)', lineHeight: 1, marginBottom: '4px' }}>£0</div>
-            <div style={{ fontSize: 'var(--text-sm)', color: 'var(--fg-muted)', marginBottom: '20px' }}>Up to 3 reports, 10 findings each</div>
+            <div style={{ fontSize: 'var(--fs-sm)', color: 'var(--fg-muted)', marginBottom: '20px' }}>Up to 3 reports, 10 findings each</div>
             <ul className="price-features" style={{ marginBottom: '24px' }}>
               {['PDF export', 'CVSS v3.1 scoring', 'Finding templates (read)', 'Community support'].map(f => (
                 <li key={f}>
                   <Icons.Check size={14} />
-                  <span style={{ fontSize: 'var(--text-sm)', color: 'var(--fg-muted)' }}>{f}</span>
+                  <span style={{ fontSize: 'var(--fs-sm)', color: 'var(--fg-muted)' }}>{f}</span>
                 </li>
               ))}
             </ul>
             <Link href="/signup" className="btn btn-outline" style={{ width: '100%', justifyContent: 'center' }}>Get started</Link>
           </div>
           {/* Pro */}
-          <div style={{ padding: '28px', border: '2px solid var(--accent)', borderRadius: 'var(--radius-lg)', background: 'var(--bg)', position: 'relative' }}>
-            <div style={{ position: 'absolute', top: '-11px', left: '20px', background: 'var(--accent)', color: '#fff', fontSize: 'var(--text-xs)', fontWeight: 600, padding: '2px 10px', borderRadius: '99px', letterSpacing: '0.04em' }}>MOST POPULAR</div>
-            <div style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--fg)', marginBottom: '8px' }}>Pro</div>
+          <div style={{ padding: '28px', border: '2px solid var(--accent)', borderRadius: 'var(--r-lg)', background: 'var(--bg)', position: 'relative' }}>
+            <div style={{ position: 'absolute', top: '-11px', left: '20px', background: 'var(--accent)', color: '#fff', fontSize: 'var(--fs-xs)', fontWeight: 600, padding: '2px 10px', borderRadius: '99px', letterSpacing: '0.04em' }}>MOST POPULAR</div>
+            <div style={{ fontSize: 'var(--fs-sm)', fontWeight: 600, color: 'var(--fg)', marginBottom: '8px' }}>Pro</div>
             <div style={{ fontSize: '36px', fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--fg)', lineHeight: 1, marginBottom: '4px' }}>
               £49<span style={{ fontSize: '16px', fontWeight: 400, color: 'var(--fg-muted)' }}>/mo</span>
             </div>
-            <div style={{ fontSize: 'var(--text-sm)', color: 'var(--fg-muted)', marginBottom: '20px' }}>Unlimited reports and findings</div>
+            <div style={{ fontSize: 'var(--fs-sm)', color: 'var(--fg-muted)', marginBottom: '20px' }}>Unlimited reports and findings</div>
             <ul className="price-features" style={{ marginBottom: '24px' }}>
               {['Everything in Free', 'Unlimited reports', 'Full template library', 'AI-assisted recommendations', 'Priority support'].map(f => (
                 <li key={f}>
                   <Icons.Check size={14} />
-                  <span style={{ fontSize: 'var(--text-sm)', color: 'var(--fg-muted)' }}>{f}</span>
+                  <span style={{ fontSize: 'var(--fs-sm)', color: 'var(--fg-muted)' }}>{f}</span>
                 </li>
               ))}
             </ul>
@@ -202,10 +202,10 @@ export default function LandingPage() {
         </div>
         <div style={{ display: 'flex', gap: '24px', justifyContent: 'center', marginBottom: '16px' }}>
           {['Privacy', 'Terms', 'Security', 'Status'].map(l => (
-            <a key={l} href="#" style={{ fontSize: 'var(--text-sm)', color: 'var(--fg-muted)', textDecoration: 'none' }}>{l}</a>
+            <a key={l} href="#" style={{ fontSize: 'var(--fs-sm)', color: 'var(--fg-muted)', textDecoration: 'none' }}>{l}</a>
           ))}
         </div>
-        <p style={{ fontSize: 'var(--text-xs)', color: 'var(--fg-subtle)' }}>
+        <p style={{ fontSize: 'var(--fs-xs)', color: 'var(--fg-subtle)' }}>
           © 2026 D4rkWolf Studios. All rights reserved.
         </p>
       </footer>

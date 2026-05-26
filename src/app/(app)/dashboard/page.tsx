@@ -25,7 +25,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* KPI strip */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1px', background: 'var(--border)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden', marginBottom: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1px', background: 'var(--border)', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', overflow: 'hidden', marginBottom: '24px' }}>
         {[
           { label: 'Total reports', value: String(reportList.length) },
           { label: 'Active', value: String(activeCount) },
@@ -66,7 +66,7 @@ export default async function DashboardPage() {
           </div>
         </div>
       ) : (
-        <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
+        <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', overflow: 'hidden' }}>
           <table className="tbl">
             <thead>
               <tr>
@@ -90,8 +90,8 @@ export default async function DashboardPage() {
                     <td>
                       <StatusPill status={(report.status ?? 'draft') as 'draft' | 'active' | 'final'} />
                     </td>
-                    <td style={{ color: 'var(--fg-muted)', fontSize: 'var(--text-sm)' }}>—</td>
-                    <td style={{ color: 'var(--fg-muted)', fontFamily: 'var(--font-mono)', fontSize: 'var(--text-xs)' }}>
+                    <td style={{ color: 'var(--fg-muted)', fontSize: 'var(--fs-sm)' }}>—</td>
+                    <td style={{ color: 'var(--fg-muted)', fontFamily: 'var(--font-mono)', fontSize: 'var(--fs-xs)' }}>
                       {report.createdAt ? new Date(report.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
                     </td>
                     <td>

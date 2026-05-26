@@ -54,7 +54,7 @@ export function FindingCard({
       )}
       <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
         <form action={deleteFinding.bind(null, finding.id, reportId)}>
-          <button type="submit" className="btn btn-ghost btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--crit)' }}>
+          <button type="submit" className="btn btn-ghost btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--sev-critical)' }}>
             <Icons.Trash size={13} />
             Remove
           </button>
