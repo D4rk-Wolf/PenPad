@@ -201,9 +201,9 @@ export default function LandingPage() {
           <span style={{ fontWeight: 700, fontSize: '14px', color: 'var(--fg)' }}>PenPad</span>
         </div>
         <div style={{ display: 'flex', gap: '24px', justifyContent: 'center', marginBottom: '16px' }}>
-          {['Privacy', 'Terms', 'Security', 'Status'].map(l => (
-            <a key={l} href="#" style={{ fontSize: 'var(--fs-sm)', color: 'var(--fg-muted)', textDecoration: 'none' }}>{l}</a>
-          ))}
+          <Link href="/privacy" style={{ fontSize: 'var(--fs-sm)', color: 'var(--fg-muted)', textDecoration: 'none' }}>Privacy</Link>
+          <Link href="/terms" style={{ fontSize: 'var(--fs-sm)', color: 'var(--fg-muted)', textDecoration: 'none' }}>Terms</Link>
+          <a href="mailto:security@d4rkwolf.co.uk" style={{ fontSize: 'var(--fs-sm)', color: 'var(--fg-muted)', textDecoration: 'none' }}>Security</a>
         </div>
         <p style={{ fontSize: 'var(--fs-xs)', color: 'var(--fg-subtle)' }}>
           © 2026 D4rkWolf Studios. All rights reserved.

@@ -15,6 +15,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [emailSent, setEmailSent] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
@@ -23,40 +24,70 @@ export function AuthForm({ mode }: { mode: Mode }) {
     setLoading(true)
     setError(null)
 
-    const { error } = mode === 'login'
-      ? await supabase.auth.signInWithPassword({ email, password })
-      : await supabase.auth.signUp({ email, password })
-
-    if (error) {
-      setError(error.message)
-      setLoading(false)
-      return
+    if (mode === 'login') {
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) { setError(error.message); setLoading(false); return }
+      router.push('/dashboard')
+      router.refresh()
+    } else {
+      const { data, error } = await supabase.auth.signUp({ email, password })
+      if (error) { setError(error.message); setLoading(false); return }
+      if (data.session) {
+        // Email confirmation disabled — signed in immediately
+        router.push('/dashboard')
+        router.refresh()
+      } else {
+        // Email confirmation enabled — prompt user to check inbox
+        setEmailSent(true)
+      }
     }
+  }
 
-    router.push('/dashboard')
-    router.refresh()
+  const brandSide = (
+    <div className="auth-side">
+      <div className="auth-side-content">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '48px' }}>
+          <BrandMark size={28} />
+          <span style={{ fontWeight: 700, fontSize: '18px', letterSpacing: '-0.01em', color: '#fff' }}>PenPad</span>
+        </div>
+        <h2 className="auth-side-headline">
+          The reporting workbench for{' '}
+          <em>working penetration testers</em>
+        </h2>
+        <p className="auth-side-footer">
+          Log findings. Score with CVSS v3.1. Ship client-ready PDFs.
+        </p>
+      </div>
+    </div>
+  )
+
+  if (emailSent) {
+    return (
+      <div className="auth-shell">
+        {brandSide}
+        <div className="auth-form-side">
+          <div className="auth-form" style={{ textAlign: 'center' }}>
+            <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'color-mix(in srgb, var(--accent) 12%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+              <Icons.Check size={20} style={{ color: 'var(--accent)' }} />
+            </div>
+            <h2>Check your email</h2>
+            <p className="auth-form-sub">
+              We sent a confirmation link to <strong style={{ color: 'var(--fg)' }}>{email}</strong>.
+              Click it to activate your account.
+            </p>
+            <p style={{ marginTop: '24px', fontSize: 'var(--fs-sm)', color: 'var(--fg-muted)' }}>
+              Already confirmed?{' '}
+              <Link href="/login" style={{ color: 'var(--fg)', fontWeight: 500 }}>Sign in</Link>
+            </p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="auth-shell">
-      {/* Brand side */}
-      <div className="auth-side">
-        <div className="auth-side-content">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '48px' }}>
-            <BrandMark size={28} />
-            <span style={{ fontWeight: 700, fontSize: '18px', letterSpacing: '-0.01em', color: '#fff' }}>PenPad</span>
-          </div>
-          <h2 className="auth-side-headline">
-            The reporting workbench for{' '}
-            <em>working penetration testers</em>
-          </h2>
-          <p className="auth-side-footer">
-            Log findings. Score with CVSS v3.1. Ship client-ready PDFs.
-          </p>
-        </div>
-      </div>
-
-      {/* Form side */}
+      {brandSide}
       <div className="auth-form-side">
         <div className="auth-form">
           <h2>{mode === 'login' ? 'Welcome back' : 'Create your account'}</h2>
