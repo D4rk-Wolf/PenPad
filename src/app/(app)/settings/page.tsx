@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getSubscription } from '@/app/actions/reports'
 import { createCheckoutSession, createCustomerPortalSession } from '@/lib/stripe'
+import { updateProfile, updatePassword, deleteAccount } from '@/app/actions/settings'
 import { Icons } from '@/components/penpad/icons'
 
 async function startCheckout() {
@@ -24,14 +25,42 @@ async function openPortal() {
   redirect(portal.url)
 }
 
-export default async function SettingsPage() {
+const SUCCESS_MESSAGES: Record<string, string> = {
+  profile:  'Profile updated successfully.',
+  security: 'Password updated successfully.',
+}
+
+const ERROR_MESSAGES: Record<string, string> = {
+  profile:         'Failed to update profile. Please try again.',
+  password:        'Failed to update password. Please try again.',
+  'password-short': 'New password must be at least 8 characters.',
+  'password-same':  'New password must be different from your current password.',
+  'password-wrong': 'Current password is incorrect.',
+  'delete-confirm': "Type exactly 'delete my account' to confirm.",
+}
+
+export default async function SettingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ success?: string; error?: string }>
+}) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
+
   const sub = await getSubscription(user.id)
   const isPro = sub?.status === 'active'
 
-  const NAV_ITEMS = ['Profile', 'Workspace', 'Billing', 'Security', 'API Keys', 'Audit Log', 'Danger Zone']
+  const { success, error } = await searchParams
+  const successMsg = success ? SUCCESS_MESSAGES[success] : null
+  const errorMsg = error ? (ERROR_MESSAGES[error] ?? 'Something went wrong.') : null
+
+  const NAV_ITEMS = [
+    { label: 'Profile',     href: '#profile' },
+    { label: 'Billing',     href: '#billing' },
+    { label: 'Security',    href: '#security' },
+    { label: 'Danger Zone', href: '#danger' },
+  ]
 
   return (
     <div className="content">
@@ -39,39 +68,78 @@ export default async function SettingsPage() {
         <h1 className="page-title">Settings</h1>
       </div>
 
+      {(successMsg || errorMsg) && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          padding: '10px 14px',
+          borderRadius: 'var(--r-md)',
+          marginBottom: '20px',
+          background: successMsg
+            ? 'color-mix(in srgb, var(--accent) 10%, transparent)'
+            : 'color-mix(in srgb, var(--sev-critical) 10%, transparent)',
+          border: `1px solid ${successMsg
+            ? 'color-mix(in srgb, var(--accent) 25%, transparent)'
+            : 'color-mix(in srgb, var(--sev-critical) 25%, transparent)'}`,
+          color: successMsg ? 'var(--accent)' : 'var(--sev-critical)',
+          fontSize: 'var(--fs-sm)',
+        }}>
+          {successMsg
+            ? <Icons.Check size={14} style={{ flexShrink: 0 }} />
+            : <Icons.AlertTriangle size={14} style={{ flexShrink: 0 }} />
+          }
+          {successMsg ?? errorMsg}
+        </div>
+      )}
+
       <div className="settings-grid">
         {/* Side nav */}
         <nav className="settings-nav">
-          {NAV_ITEMS.map((item, i) => (
-            <div key={item} className={`settings-nav-item${i === 2 ? ' active' : ''}`}>{item}</div>
+          {NAV_ITEMS.map(({ label, href }) => (
+            <a
+              key={label}
+              href={href}
+              className="settings-nav-item"
+              style={{ textDecoration: 'none' }}
+            >
+              {label}
+            </a>
           ))}
         </nav>
 
         {/* Sections */}
         <div>
           {/* Profile */}
-          <div className="settings-section">
+          <div id="profile" className="settings-section" style={{ scrollMarginTop: '80px' }}>
             <h2 className="settings-section-title">Profile</h2>
             <p className="settings-section-sub">Your account information.</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <form action={updateProfile} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div className="field">
                 <label className="field-label">Email</label>
                 <input className="input" type="email" defaultValue={user.email ?? ''} disabled style={{ opacity: 0.65 }} />
               </div>
               <div className="field">
                 <label className="field-label">Full name <span className="field-optional">optional</span></label>
-                <input className="input" type="text" defaultValue={user.user_metadata?.full_name ?? ''} placeholder="Jamie Foster" />
+                <input
+                  className="input"
+                  type="text"
+                  name="fullName"
+                  defaultValue={user.user_metadata?.full_name ?? ''}
+                  placeholder="Jamie Foster"
+                  maxLength={100}
+                />
               </div>
               <div>
-                <button className="btn btn-outline btn-sm" disabled>Save changes</button>
+                <button type="submit" className="btn btn-outline btn-sm">Save changes</button>
               </div>
-            </div>
+            </form>
           </div>
 
           <div className="divider" />
 
           {/* Billing */}
-          <div className="settings-section">
+          <div id="billing" className="settings-section" style={{ scrollMarginTop: '80px' }}>
             <h2 className="settings-section-title">Billing</h2>
             <p className="settings-section-sub">Manage your plan and usage.</p>
 
@@ -137,34 +205,56 @@ export default async function SettingsPage() {
           <div className="divider" />
 
           {/* Security */}
-          <div className="settings-section">
+          <div id="security" className="settings-section" style={{ scrollMarginTop: '80px' }}>
             <h2 className="settings-section-title">Security</h2>
-            <p className="settings-section-sub">Password and authentication settings.</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <p className="settings-section-sub">Change your password.</p>
+            <form action={updatePassword} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div className="field">
                 <label className="field-label">Current password</label>
-                <input className="input" type="password" placeholder="••••••••" />
+                <input className="input" type="password" name="currentPassword" placeholder="••••••••" required autoComplete="current-password" />
               </div>
               <div className="field">
-                <label className="field-label">New password</label>
-                <input className="input" type="password" placeholder="••••••••" />
+                <label className="field-label">New password <span className="field-hint">Min 8 characters</span></label>
+                <input className="input" type="password" name="newPassword" placeholder="••••••••" required minLength={8} autoComplete="new-password" />
               </div>
               <div>
-                <button className="btn btn-outline btn-sm" disabled>Update password</button>
+                <button type="submit" className="btn btn-outline btn-sm">Update password</button>
               </div>
-            </div>
+            </form>
           </div>
 
           <div className="divider" />
 
           {/* Danger zone */}
-          <div className="settings-section">
+          <div id="danger" className="settings-section" style={{ scrollMarginTop: '80px' }}>
             <h2 className="settings-section-title" style={{ color: 'var(--sev-critical)' }}>Danger zone</h2>
-            <p className="settings-section-sub">These actions are irreversible.</p>
-            <button className="btn btn-outline btn-sm" style={{ color: 'var(--sev-critical)', borderColor: 'color-mix(in srgb, var(--sev-critical) 30%, transparent)', display: 'flex', alignItems: 'center', gap: '6px' }} disabled>
-              <Icons.Trash size={13} />
-              Delete account
-            </button>
+            <p className="settings-section-sub">Permanently delete your account and all data. This cannot be undone.</p>
+            <form action={deleteAccount} style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: '400px' }}>
+              <div className="field">
+                <label className="field-label">
+                  Type <strong style={{ color: 'var(--fg)' }}>delete my account</strong> to confirm
+                </label>
+                <input
+                  className="input"
+                  type="text"
+                  name="confirmation"
+                  placeholder="delete my account"
+                  required
+                  autoComplete="off"
+                  style={{ fontFamily: 'var(--font-mono)' }}
+                />
+              </div>
+              <div>
+                <button
+                  type="submit"
+                  className="btn btn-outline btn-sm"
+                  style={{ color: 'var(--sev-critical)', borderColor: 'color-mix(in srgb, var(--sev-critical) 30%, transparent)', display: 'flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <Icons.Trash size={13} />
+                  Delete account
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </div>

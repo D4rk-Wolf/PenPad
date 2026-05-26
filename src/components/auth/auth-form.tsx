@@ -66,20 +66,6 @@ export function AuthForm({ mode }: { mode: Mode }) {
               : 'Start shipping better pen test reports today'}
           </p>
 
-          {/* OAuth */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
-            <button className="btn btn-outline" style={{ width: '100%', justifyContent: 'center', gap: '8px' }} type="button" disabled>
-              <Icons.GitHub size={16} />
-              Continue with GitHub
-            </button>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-            <div className="divider" style={{ flex: 1 }} />
-            <span style={{ fontSize: 'var(--fs-xs)', color: 'var(--fg-muted)' }}>or continue with email</span>
-            <div className="divider" style={{ flex: 1 }} />
-          </div>
-
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <Field label="Email address">
               <input
