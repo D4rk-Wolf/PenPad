@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { adminDb, camel } from '@/lib/supabase/admin'
-import { getSubscription } from '@/app/actions/reports'
+import { getMySubscription } from '@/lib/subscriptions'
 import type { FindingTemplate, Finding } from '@/lib/db/schema'
 
 export async function getMyTemplates(): Promise<FindingTemplate[]> {
@@ -25,7 +25,7 @@ export async function saveTemplate(findingId: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Unauthenticated')
 
-  const sub = await getSubscription(user.id)
+  const sub = await getMySubscription()
   if (sub?.status !== 'active') throw new Error('Pro subscription required')
 
   const { data: findingRow } = await adminDb()

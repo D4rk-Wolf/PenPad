@@ -2,7 +2,9 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getMyTemplates, deleteTemplate } from '@/app/actions/templates'
-import { getSubscription } from '@/app/actions/reports'
+import { getMySubscription } from '@/lib/subscriptions'
+
+export const dynamic = 'force-dynamic'
 import { Icons } from '@/components/penpad/icons'
 import { SeverityPill } from '@/components/penpad/ui'
 import type { Severity } from '@/lib/utils'
@@ -11,7 +13,7 @@ export default async function TemplatesPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
-  const sub = await getSubscription(user.id)
+  const sub = await getMySubscription()
   const isPro = sub?.status === 'active'
   const templates = isPro ? await getMyTemplates() : []
 

@@ -4,8 +4,10 @@ import { createClient } from '@/lib/supabase/server'
 import { adminDb, camel } from '@/lib/supabase/admin'
 import type { Report } from '@/lib/db/schema'
 import { getFindings } from '@/app/actions/findings'
-import { getSubscription } from '@/app/actions/reports'
+import { getMySubscription } from '@/lib/subscriptions'
 import { getMyTemplates } from '@/app/actions/templates'
+
+export const dynamic = 'force-dynamic'
 import { FindingForm } from '@/components/findings/finding-form'
 import { FindingCard } from '@/components/findings/finding-card'
 import { Icons } from '@/components/penpad/icons'
@@ -30,7 +32,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
 
   const [findingList, sub, myTemplates] = await Promise.all([
     getFindings(id),
-    getSubscription(user.id),
+    getMySubscription(),
     getMyTemplates(),
   ])
   const isPro = sub?.status === 'active'

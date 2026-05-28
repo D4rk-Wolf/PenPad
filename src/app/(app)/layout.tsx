@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { AppShell } from '@/components/layout/app-shell'
+import { SentryReplayActivator } from '@/components/sentry-replay-activator'
 
 async function signOut() {
   'use server'
@@ -23,6 +24,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       }}
       signOut={signOut}
     >
+      <SentryReplayActivator />
       {children}
     </AppShell>
   )
