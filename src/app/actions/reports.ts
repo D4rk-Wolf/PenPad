@@ -129,6 +129,7 @@ export async function deleteReport(reportId: string) {
  * This shim exists to avoid breaking callers while migration happens.
  * It ignores the userId param and always resolves the calling user's own subscription.
  */
-export async function getSubscription(_userId?: string): Promise<Subscription | null> {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function getSubscription(userId?: string): Promise<Subscription | null> {
   return getMySubscription()
 }

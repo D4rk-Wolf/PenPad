@@ -25,7 +25,7 @@ export default function NotFound() {
         Page not found
       </h1>
       <p style={{ fontSize: 'var(--fs-sm)', color: 'var(--fg-muted)', marginBottom: '32px', textAlign: 'center', maxWidth: '340px', lineHeight: 1.5 }}>
-        The page you're looking for doesn't exist or has been moved.
+        The page you&apos;re looking for doesn&apos;t exist or has been moved.
       </p>
       <div style={{ display: 'flex', gap: '10px' }}>
         <Link href="/dashboard" className="btn btn-accent btn-sm">Go to dashboard</Link>

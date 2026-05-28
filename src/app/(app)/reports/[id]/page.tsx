@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic'
 import { FindingForm } from '@/components/findings/finding-form'
 import { FindingCard } from '@/components/findings/finding-card'
 import { Icons } from '@/components/penpad/icons'
-import { SeverityPill, CvssGauge, StatusPill, SeverityCounts } from '@/components/penpad/ui'
+import { StatusPill, SeverityCounts } from '@/components/penpad/ui'
 
 const SEV_ORDER = { critical: 0, high: 1, medium: 2, low: 3, info: 4 }
 

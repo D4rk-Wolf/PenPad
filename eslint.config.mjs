@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Project tooling — not application source
+    ".remember/**",
+    ".full-review/**",
   ]),
 ]);
 
