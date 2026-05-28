@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  PNPM_VERSION: '11'
+  PNPM_VERSION: '9'
 
 jobs:
   # ── 1. Secret scanning — cheapest gate, runs first ──────────────────────────
