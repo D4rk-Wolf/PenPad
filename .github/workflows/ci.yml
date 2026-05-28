@@ -86,20 +86,15 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: supabase/setup-cli@v1
         with:
-          version: ${{ env.PNPM_VERSION }}
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
+          version: latest
       - name: Apply migrations
-        run: pnpm db:migrate
+        # Uses the direct (non-pooled) connection — required by Supabase CLI.
+        # supabase db push applies all pending migrations from supabase/migrations/.
+        run: supabase db push --db-url "$DATABASE_URL_DIRECT"
         env:
-          # Use the direct (non-pooled) connection for migrations — not the pooler URL.
-          # Drizzle uses advisory locks which require a persistent connection.
-          DATABASE_URL: ${{ secrets.DATABASE_URL_DIRECT }}
+          DATABASE_URL_DIRECT: ${{ secrets.DATABASE_URL_DIRECT }}
 
   # ── 5. Deploy to production (main only, after migrations) ───────────────────
   deploy-production:
