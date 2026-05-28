@@ -2,20 +2,12 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { adminDb, camel } from '@/lib/supabase/admin'
 import { getMySubscription } from '@/lib/subscriptions'
+import { ReportSchema } from '@/lib/validations'
 import type { Report, Subscription } from '@/lib/db/schema'
 import { FREE_REPORT_LIMIT } from '@/lib/utils'
-
-const ReportSchema = z.object({
-  clientName: z.string().min(1, 'Client name is required').max(200),
-  scope:      z.string().max(5_000).optional().nullable(),
-  startDate:  z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
-  endDate:    z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
-  testerName: z.string().max(200).optional().nullable(),
-})
 
 async function getCurrentUserId(): Promise<string> {
   const supabase = await createClient()

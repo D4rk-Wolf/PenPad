@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { adminDb } from '@/lib/supabase/admin'
 import { getStripeInstance } from '@/lib/stripe'
+import { PasswordSchema } from '@/lib/validations'
 
 export async function updateProfile(formData: FormData) {
   const supabase = await createClient()
@@ -28,10 +29,6 @@ export async function updatePassword(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const PasswordSchema = z.object({
-    currentPassword: z.string().min(1),
-    newPassword:     z.string().min(8, 'New password must be at least 8 characters'),
-  })
   const parsed = PasswordSchema.safeParse({
     currentPassword: formData.get('currentPassword'),
     newPassword:     formData.get('newPassword'),

@@ -5,20 +5,9 @@ import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { adminDb, camel } from '@/lib/supabase/admin'
 import { getMySubscription } from '@/lib/subscriptions'
+import { FindingSchema } from '@/lib/validations'
 import type { Finding } from '@/lib/db/schema'
 import { deriveSeverity, FREE_FINDING_LIMIT } from '@/lib/utils'
-
-// ── Schemas ───────────────────────────────────────────────────────────────────
-
-const FindingSchema = z.object({
-  title:             z.string().min(1, 'Title is required').max(500),
-  description:       z.string().max(20_000).optional().nullable(),
-  cvssScore:         z.coerce.number().min(0).max(10),
-  impact:            z.string().max(10_000).optional().nullable(),
-  recommendation:    z.string().max(10_000).optional().nullable(),
-  evidence:          z.string().max(20_000).optional().nullable(),
-  affectedComponent: z.string().max(500).optional().nullable(),
-})
 
 // ── Auth guard ────────────────────────────────────────────────────────────────
 

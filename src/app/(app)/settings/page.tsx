@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getMySubscription } from '@/lib/subscriptions'
+
+export const dynamic = 'force-dynamic'
 import { createCheckoutSession, createCustomerPortalSession } from '@/lib/stripe'
 import { updateProfile, updatePassword, deleteAccount } from '@/app/actions/settings'
 import { Icons } from '@/components/penpad/icons'

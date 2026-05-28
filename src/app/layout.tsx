@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { IBM_Plex_Sans, IBM_Plex_Mono, IBM_Plex_Serif } from 'next/font/google'
 import Script from 'next/script'
+import { Toaster } from '@/components/ui/sonner'
 import './globals.css'
 
 const ibmPlexSans = IBM_Plex_Sans({
@@ -43,7 +44,10 @@ export default function RootLayout({
         {/* Runs before paint to apply stored theme without flash */}
         <Script src="/theme-init.js" strategy="beforeInteractive" />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <Toaster position="bottom-right" richColors />
+      </body>
     </html>
   )
 }

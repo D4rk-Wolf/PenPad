@@ -6,6 +6,8 @@ import type { Report } from '@/lib/db/schema'
 import { getFindings } from '@/app/actions/findings'
 import { getMySubscription } from '@/lib/subscriptions'
 import { getMyTemplates } from '@/app/actions/templates'
+
+export const dynamic = 'force-dynamic'
 import { FindingForm } from '@/components/findings/finding-form'
 import { FindingCard } from '@/components/findings/finding-card'
 import { Icons } from '@/components/penpad/icons'

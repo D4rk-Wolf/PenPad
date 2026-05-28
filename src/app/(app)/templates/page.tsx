@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getMyTemplates, deleteTemplate } from '@/app/actions/templates'
 import { getMySubscription } from '@/lib/subscriptions'
+
+export const dynamic = 'force-dynamic'
 import { Icons } from '@/components/penpad/icons'
 import { SeverityPill } from '@/components/penpad/ui'
 import type { Severity } from '@/lib/utils'

@@ -3,6 +3,9 @@ import { getReports } from '@/app/actions/reports'
 import { Icons } from '@/components/penpad/icons'
 import { StatusPill } from '@/components/penpad/ui'
 
+// User-specific data — always render fresh, never serve a cached response
+export const dynamic = 'force-dynamic'
+
 export default async function DashboardPage() {
   const reportList = await getReports()
   const activeCount = reportList.filter(r => r.status === 'active').length
