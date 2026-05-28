@@ -1,6 +1,7 @@
 'use server'
 
 import { redirect } from 'next/navigation'
+import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { adminDb } from '@/lib/supabase/admin'
 import { getStripeInstance } from '@/lib/stripe'
@@ -10,7 +11,9 @@ export async function updateProfile(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const fullName = (formData.get('fullName') as string ?? '').trim().slice(0, 100)
+  const fullName = z.string().max(100).default('').parse(
+    (formData.get('fullName') as string ?? '').trim()
+  )
 
   const { error } = await supabase.auth.updateUser({ data: { full_name: fullName } })
   if (error) {
@@ -25,10 +28,17 @@ export async function updatePassword(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const currentPassword = formData.get('currentPassword') as string
-  const newPassword = formData.get('newPassword') as string
+  const PasswordSchema = z.object({
+    currentPassword: z.string().min(1),
+    newPassword:     z.string().min(8, 'New password must be at least 8 characters'),
+  })
+  const parsed = PasswordSchema.safeParse({
+    currentPassword: formData.get('currentPassword'),
+    newPassword:     formData.get('newPassword'),
+  })
+  if (!parsed.success) redirect('/settings?error=password-short#security')
+  const { currentPassword, newPassword } = parsed.data
 
-  if (!newPassword || newPassword.length < 8) redirect('/settings?error=password-short#security')
   if (currentPassword === newPassword) redirect('/settings?error=password-same#security')
 
   // Verify current password before allowing the change

@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { getSubscription } from '@/app/actions/reports'
+import { getMySubscription } from '@/lib/subscriptions'
 import { createCheckoutSession, createCustomerPortalSession } from '@/lib/stripe'
 import { updateProfile, updatePassword, deleteAccount } from '@/app/actions/settings'
 import { Icons } from '@/components/penpad/icons'
@@ -19,9 +19,10 @@ async function openPortal() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
-  const sub = await getSubscription(user.id)
+  const sub = await getMySubscription()
   if (!sub?.stripeCustomerId) redirect('/settings')
   const portal = await createCustomerPortalSession(sub.stripeCustomerId)
+  // assertStripeRedirectUrl inside createCustomerPortalSession already validated portal.url
   redirect(portal.url)
 }
 
@@ -48,7 +49,7 @@ export default async function SettingsPage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const sub = await getSubscription(user.id)
+  const sub = await getMySubscription()
   const isPro = sub?.status === 'active'
 
   const { success, error } = await searchParams

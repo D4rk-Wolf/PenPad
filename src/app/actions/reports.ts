@@ -2,10 +2,20 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { adminDb, camel } from '@/lib/supabase/admin'
+import { getMySubscription } from '@/lib/subscriptions'
 import type { Report, Subscription } from '@/lib/db/schema'
 import { FREE_REPORT_LIMIT } from '@/lib/utils'
+
+const ReportSchema = z.object({
+  clientName: z.string().min(1, 'Client name is required').max(200),
+  scope:      z.string().max(5_000).optional().nullable(),
+  startDate:  z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
+  endDate:    z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
+  testerName: z.string().max(200).optional().nullable(),
+})
 
 async function getCurrentUserId(): Promise<string> {
   const supabase = await createClient()
@@ -20,7 +30,7 @@ export async function getReports(): Promise<Report[]> {
     .from('reports')
     .select('*')
     .eq('user_id', userId)
-    .order('created_at')
+    .order('created_at', { ascending: false })
   if (error) throw new Error(error.message)
   return (data ?? []).map(r => camel<Report>(r as Record<string, unknown>))
 }
@@ -28,34 +38,47 @@ export async function getReports(): Promise<Report[]> {
 export async function createReport(formData: FormData) {
   const userId = await getCurrentUserId()
 
-  const { data: existing, error: e1 } = await adminDb()
-    .from('reports')
-    .select('id')
-    .eq('user_id', userId)
+  // Use count query instead of fetching all row IDs (Perf H3)
+  const [{ count: reportCount, error: e1 }, subResult] = await Promise.all([
+    adminDb()
+      .from('reports')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId),
+    adminDb()
+      .from('subscriptions')
+      .select('status')
+      .eq('user_id', userId)
+      .limit(1),
+  ])
   if (e1) throw new Error(e1.message)
 
-  const { data: subRows, error: e2 } = await adminDb()
-    .from('subscriptions')
-    .select('status')
-    .eq('user_id', userId)
-    .limit(1)
-  if (e2) throw new Error(e2.message)
+  const isPro = subResult.data?.[0]?.status === 'active'
 
-  const isPro = subRows?.[0]?.status === 'active'
-
-  if (!isPro && (existing?.length ?? 0) >= FREE_REPORT_LIMIT) {
+  if (!isPro && (reportCount ?? 0) >= FREE_REPORT_LIMIT) {
     throw new Error(`Free tier limited to ${FREE_REPORT_LIMIT} reports. Upgrade to Pro for unlimited.`)
   }
+
+  const parsed = ReportSchema.safeParse({
+    clientName: formData.get('clientName'),
+    scope:      formData.get('scope') || null,
+    startDate:  formData.get('startDate') || null,
+    endDate:    formData.get('endDate') || null,
+    testerName: formData.get('testerName') || null,
+  })
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues.map(i => i.message).join('; '))
+  }
+  const d = parsed.data
 
   const { data, error } = await adminDb()
     .from('reports')
     .insert({
       user_id:     userId,
-      client_name: formData.get('clientName') as string,
-      scope:       formData.get('scope') as string || null,
-      start_date:  formData.get('startDate') as string || null,
-      end_date:    formData.get('endDate') as string || null,
-      tester_name: formData.get('testerName') as string || null,
+      client_name: d.clientName,
+      scope:       d.scope ?? null,
+      start_date:  d.startDate ?? null,
+      end_date:    d.endDate ?? null,
+      tester_name: d.testerName ?? null,
     })
     .select()
     .single()
@@ -68,14 +91,27 @@ export async function createReport(formData: FormData) {
 
 export async function updateReport(reportId: string, formData: FormData) {
   const userId = await getCurrentUserId()
+
+  const parsed = ReportSchema.safeParse({
+    clientName: formData.get('clientName'),
+    scope:      formData.get('scope') || null,
+    startDate:  formData.get('startDate') || null,
+    endDate:    formData.get('endDate') || null,
+    testerName: formData.get('testerName') || null,
+  })
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues.map(i => i.message).join('; '))
+  }
+  const d = parsed.data
+
   const { error } = await adminDb()
     .from('reports')
     .update({
-      client_name: formData.get('clientName') as string,
-      scope:       formData.get('scope') as string || null,
-      start_date:  formData.get('startDate') as string || null,
-      end_date:    formData.get('endDate') as string || null,
-      tester_name: formData.get('testerName') as string || null,
+      client_name: d.clientName,
+      scope:       d.scope ?? null,
+      start_date:  d.startDate ?? null,
+      end_date:    d.endDate ?? null,
+      tester_name: d.testerName ?? null,
     })
     .eq('id', reportId)
     .eq('user_id', userId)
@@ -96,17 +132,11 @@ export async function deleteReport(reportId: string) {
   redirect('/dashboard')
 }
 
-export async function getSubscription(userId: string): Promise<Subscription | null> {
-  // Ensure callers can only retrieve their own subscription, not any arbitrary userId
-  const callerId = await getCurrentUserId()
-  if (callerId !== userId) throw new Error('Forbidden')
-
-  const { data, error } = await adminDb()
-    .from('subscriptions')
-    .select('*')
-    .eq('user_id', userId)
-    .limit(1)
-    .maybeSingle()
-  if (error) throw new Error(error.message)
-  return data ? camel<Subscription>(data as Record<string, unknown>) : null
+/**
+ * @deprecated Use `getMySubscription()` from `@/lib/subscriptions` directly.
+ * This shim exists to avoid breaking callers while migration happens.
+ * It ignores the userId param and always resolves the calling user's own subscription.
+ */
+export async function getSubscription(_userId?: string): Promise<Subscription | null> {
+  return getMySubscription()
 }

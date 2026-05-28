@@ -1,10 +1,26 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { adminDb, camel } from '@/lib/supabase/admin'
+import { getMySubscription } from '@/lib/subscriptions'
 import type { Finding } from '@/lib/db/schema'
 import { deriveSeverity, FREE_FINDING_LIMIT } from '@/lib/utils'
+
+// ── Schemas ───────────────────────────────────────────────────────────────────
+
+const FindingSchema = z.object({
+  title:             z.string().min(1, 'Title is required').max(500),
+  description:       z.string().max(20_000).optional().nullable(),
+  cvssScore:         z.coerce.number().min(0).max(10),
+  impact:            z.string().max(10_000).optional().nullable(),
+  recommendation:    z.string().max(10_000).optional().nullable(),
+  evidence:          z.string().max(20_000).optional().nullable(),
+  affectedComponent: z.string().max(500).optional().nullable(),
+})
+
+// ── Auth guard ────────────────────────────────────────────────────────────────
 
 async function assertReportOwner(reportId: string): Promise<string> {
   const supabase = await createClient()
@@ -21,6 +37,8 @@ async function assertReportOwner(reportId: string): Promise<string> {
   return user.id
 }
 
+// ── Actions ───────────────────────────────────────────────────────────────────
+
 export async function getFindings(reportId: string): Promise<Finding[]> {
   await assertReportOwner(reportId)
   const { data, error } = await adminDb()
@@ -34,29 +52,43 @@ export async function getFindings(reportId: string): Promise<Finding[]> {
 }
 
 export async function createFinding(reportId: string, formData: FormData) {
-  const userId = await assertReportOwner(reportId)
-  const cvssScore = parseFloat(formData.get('cvssScore') as string) || 0
+  await assertReportOwner(reportId)
+
+  const parsed = FindingSchema.safeParse({
+    title:             formData.get('title'),
+    description:       formData.get('description') || null,
+    cvssScore:         formData.get('cvssScore') ?? '0',
+    impact:            formData.get('impact') || null,
+    recommendation:    formData.get('recommendation') || null,
+    evidence:          formData.get('evidence') || null,
+    affectedComponent: formData.get('affectedComponent') || null,
+  })
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues.map(i => i.message).join('; '))
+  }
+  const d = parsed.data
 
   // Enforce free-tier finding limit
-  const [{ data: subRows }, { count: findingCount }] = await Promise.all([
-    adminDb().from('subscriptions').select('status').eq('user_id', userId).limit(1),
+  const [sub, { count: findingCount }] = await Promise.all([
+    getMySubscription(),
     adminDb().from('findings').select('*', { count: 'exact', head: true }).eq('report_id', reportId),
   ])
-  const isPro = subRows?.[0]?.status === 'active'
+  const isPro = sub?.status === 'active'
   if (!isPro && (findingCount ?? 0) >= FREE_FINDING_LIMIT) {
     throw new Error(`Free tier limited to ${FREE_FINDING_LIMIT} findings per report. Upgrade to Pro for unlimited.`)
   }
 
+  const cvssScore = parseFloat(d.cvssScore.toFixed(1))
   const { error } = await adminDb().from('findings').insert({
-    report_id:      reportId,
-    title:          formData.get('title') as string,
-    description:    formData.get('description') as string || null,
-    cvss_score:     parseFloat(cvssScore.toFixed(1)),
-    severity:       deriveSeverity(cvssScore),
-    impact:         formData.get('impact') as string || null,
-    recommendation: formData.get('recommendation') as string || null,
-    evidence:       formData.get('evidence') as string || null,
-    affected_component: formData.get('affectedComponent') as string || null,
+    report_id:          reportId,
+    title:              d.title,
+    description:        d.description ?? null,
+    cvss_score:         cvssScore,
+    severity:           deriveSeverity(cvssScore),
+    impact:             d.impact ?? null,
+    recommendation:     d.recommendation ?? null,
+    evidence:           d.evidence ?? null,
+    affected_component: d.affectedComponent ?? null,
   })
   if (error) throw new Error(error.message)
   revalidatePath(`/reports/${reportId}`)
@@ -64,19 +96,33 @@ export async function createFinding(reportId: string, formData: FormData) {
 
 export async function updateFinding(findingId: string, reportId: string, formData: FormData) {
   await assertReportOwner(reportId)
-  const cvssScore = parseFloat(formData.get('cvssScore') as string) || 0
 
+  const parsed = FindingSchema.safeParse({
+    title:             formData.get('title'),
+    description:       formData.get('description') || null,
+    cvssScore:         formData.get('cvssScore') ?? '0',
+    impact:            formData.get('impact') || null,
+    recommendation:    formData.get('recommendation') || null,
+    evidence:          formData.get('evidence') || null,
+    affectedComponent: formData.get('affectedComponent') || null,
+  })
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues.map(i => i.message).join('; '))
+  }
+  const d = parsed.data
+
+  const cvssScore = parseFloat(d.cvssScore.toFixed(1))
   const { error } = await adminDb()
     .from('findings')
     .update({
-      title:          formData.get('title') as string,
-      description:    formData.get('description') as string || null,
-      cvss_score:     parseFloat(cvssScore.toFixed(1)),
-      severity:       deriveSeverity(cvssScore),
-      impact:         formData.get('impact') as string || null,
-      recommendation: formData.get('recommendation') as string || null,
-      evidence:       formData.get('evidence') as string || null,
-      affected_component: formData.get('affectedComponent') as string || null,
+      title:              d.title,
+      description:        d.description ?? null,
+      cvss_score:         cvssScore,
+      severity:           deriveSeverity(cvssScore),
+      impact:             d.impact ?? null,
+      recommendation:     d.recommendation ?? null,
+      evidence:           d.evidence ?? null,
+      affected_component: d.affectedComponent ?? null,
     })
     .eq('id', findingId)
     .eq('report_id', reportId)
@@ -86,6 +132,12 @@ export async function updateFinding(findingId: string, reportId: string, formDat
 
 export async function deleteFinding(findingId: string, reportId: string) {
   await assertReportOwner(reportId)
+
+  // Validate UUIDs to prevent injection via path params
+  const uuidSchema = z.string().uuid()
+  uuidSchema.parse(findingId)
+  uuidSchema.parse(reportId)
+
   const { error } = await adminDb().from('findings').delete().eq('id', findingId).eq('report_id', reportId)
   if (error) throw new Error(error.message)
   revalidatePath(`/reports/${reportId}`)

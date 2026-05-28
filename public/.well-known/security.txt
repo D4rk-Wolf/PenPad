@@ -1,0 +1,4 @@
+Contact: mailto:security@d4rkwolf.co.uk
+Expires: 2027-06-01T00:00:00.000Z
+Preferred-Languages: en
+Policy: https://penpad.d4rkwolf.co.uk/security-policy

@@ -9,12 +9,13 @@ function getPeriodEnd(sub: Stripe.Subscription): string | null {
   return typeof ts === 'number' ? new Date(ts * 1000).toISOString() : null
 }
 
-/** Resolve subscription ID from an invoice (may be string or expanded object) */
+/** Resolve subscription ID from an invoice (may be string or expanded object).
+ *  The `subscription` field typing varies by API version; cast through unknown. */
 function getSubIdFromInvoice(invoice: Stripe.Invoice): string | null {
-  if (!invoice.subscription) return null
-  return typeof invoice.subscription === 'string'
-    ? invoice.subscription
-    : invoice.subscription.id
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sub = (invoice as any).subscription
+  if (!sub) return null
+  return typeof sub === 'string' ? sub : (sub as { id: string }).id
 }
 
 export async function POST(request: NextRequest) {
@@ -63,6 +64,24 @@ export async function POST(request: NextRequest) {
         const { data: authUser, error: authErr } = await adminDb().auth.admin.getUserById(userId)
         if (authErr || !authUser?.user) {
           console.error('[stripe/webhook] userId not found in auth:', userId)
+          break
+        }
+
+        // Cross-check: the Stripe customer email must match the auth user email.
+        // Prevents a tampered/replayed checkout metadata from granting Pro to a
+        // different account.
+        const stripeCustomerId = checkoutSession.customer as string
+        const stripeCustomer = await getStripeInstance().customers.retrieve(stripeCustomerId)
+        if (stripeCustomer.deleted) {
+          console.error('[stripe/webhook] Stripe customer deleted:', stripeCustomerId)
+          break
+        }
+        if (stripeCustomer.email && authUser.user.email &&
+            stripeCustomer.email.toLowerCase() !== authUser.user.email.toLowerCase()) {
+          console.error(
+            '[stripe/webhook] customer email mismatch — Stripe:', stripeCustomer.email,
+            '— auth:', authUser.user.email,
+          )
           break
         }
 
