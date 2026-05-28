@@ -32,4 +32,5 @@ export const SEVERITY_BORDER_COLOURS: Record<string, string> = {
 }
 
 export const FREE_REPORT_LIMIT = 3
+export const FREE_FINDING_LIMIT = 10
 

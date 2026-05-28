@@ -6,6 +6,18 @@ import { adminDb, camel } from '@/lib/supabase/admin'
 import type { Report, Finding, Subscription } from '@/lib/db/schema'
 import { ReportDocument } from '@/components/pdf/report-document'
 
+// Force Node.js runtime — react-pdf uses Node-only APIs (fs, Buffer)
+export const runtime = 'nodejs'
+
+// Cap the number of findings included in a PDF render to prevent runaway
+// memory usage on pathologically large reports.
+const MAX_FINDINGS_IN_EXPORT = 200
+
+// Maximum time (ms) to wait for react-pdf to render before giving up.
+// vercel.json sets maxDuration=60s for this route; we abort a few seconds
+// earlier so we can return a clean 504 rather than a hard Vercel timeout.
+const RENDER_TIMEOUT_MS = 30_000
+
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -40,11 +52,29 @@ export async function GET(
     .from('findings')
     .select('*')
     .eq('report_id', id)
+    .order('sort_order')
+    .order('created_at')
+    .limit(MAX_FINDINGS_IN_EXPORT)
   const findingList = (findingRows ?? []).map(f => camel<Finding>(f as Record<string, unknown>))
 
-  const buffer = await renderToBuffer(
-    <ReportDocument report={report} findings={findingList} />
-  )
+  // Race the render against a hard timeout so we never hit the Vercel wall-clock limit silently
+  let buffer: Buffer
+  try {
+    const renderPromise = renderToBuffer(
+      <ReportDocument report={report} findings={findingList} />
+    )
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('PDF render timed out')), RENDER_TIMEOUT_MS)
+    )
+    buffer = await Promise.race([renderPromise, timeoutPromise])
+  } catch (err) {
+    const isTimeout = err instanceof Error && err.message === 'PDF render timed out'
+    console.error('[export] PDF render failed:', err)
+    return NextResponse.json(
+      { error: isTimeout ? 'PDF generation timed out. Try again or contact support.' : 'Failed to generate PDF' },
+      { status: isTimeout ? 504 : 500 }
+    )
+  }
 
   // Strip characters that could break Content-Disposition header parsing
   const safeClient = report.clientName

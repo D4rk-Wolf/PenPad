@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { adminDb, camel } from '@/lib/supabase/admin'
 import type { Finding } from '@/lib/db/schema'
-import { deriveSeverity } from '@/lib/utils'
+import { deriveSeverity, FREE_FINDING_LIMIT } from '@/lib/utils'
 
 async function assertReportOwner(reportId: string): Promise<string> {
   const supabase = await createClient()
@@ -34,8 +34,18 @@ export async function getFindings(reportId: string): Promise<Finding[]> {
 }
 
 export async function createFinding(reportId: string, formData: FormData) {
-  await assertReportOwner(reportId)
+  const userId = await assertReportOwner(reportId)
   const cvssScore = parseFloat(formData.get('cvssScore') as string) || 0
+
+  // Enforce free-tier finding limit
+  const [{ data: subRows }, { count: findingCount }] = await Promise.all([
+    adminDb().from('subscriptions').select('status').eq('user_id', userId).limit(1),
+    adminDb().from('findings').select('*', { count: 'exact', head: true }).eq('report_id', reportId),
+  ])
+  const isPro = subRows?.[0]?.status === 'active'
+  if (!isPro && (findingCount ?? 0) >= FREE_FINDING_LIMIT) {
+    throw new Error(`Free tier limited to ${FREE_FINDING_LIMIT} findings per report. Upgrade to Pro for unlimited.`)
+  }
 
   const { error } = await adminDb().from('findings').insert({
     report_id:      reportId,

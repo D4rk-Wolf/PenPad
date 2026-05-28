@@ -54,22 +54,26 @@ export async function deleteAccount(formData: FormData) {
   const confirmation = (formData.get('confirmation') as string ?? '').toLowerCase().trim()
   if (confirmation !== 'delete my account') redirect('/settings?error=delete-confirm#danger')
 
-  // Cancel active Stripe subscription before deleting data
+  // 1. Read subscription before any destructive operations
   const { data: subRow } = await adminDb()
     .from('subscriptions')
     .select('stripe_subscription_id, status')
     .eq('user_id', user.id)
     .maybeSingle()
 
+  // 2. Cancel active Stripe subscription — fail-closed:
+  //    abort the whole deletion if Stripe cancellation fails to avoid
+  //    the user being charged after their account no longer exists.
   if (subRow?.stripe_subscription_id && subRow.status === 'active') {
     try {
       await getStripeInstance().subscriptions.cancel(subRow.stripe_subscription_id)
     } catch (e) {
-      console.error('[deleteAccount] Stripe cancel failed:', e)
+      console.error('[deleteAccount] Stripe cancel failed — aborting deletion:', e)
+      redirect('/settings?error=delete-billing#danger')
     }
   }
 
-  // Delete data in dependency order
+  // 3. Delete data in dependency order (findings first, then parent rows)
   const { data: reportIds } = await adminDb()
     .from('reports')
     .select('id')
@@ -88,9 +92,15 @@ export async function deleteAccount(formData: FormData) {
     adminDb().from('subscriptions').delete().eq('user_id', user.id),
   ])
 
-  // Sign out first so cookies are cleared, then delete the auth record
+  // 4. Delete the auth record — invalidates all active sessions and tokens
+  const { error: deleteErr } = await adminDb().auth.admin.deleteUser(user.id)
+  if (deleteErr) {
+    console.error('[deleteAccount] auth.admin.deleteUser failed:', deleteErr)
+    redirect('/settings?error=delete-failed#danger')
+  }
+
+  // 5. Clear local session cookies after the auth record is gone
   await supabase.auth.signOut()
-  await adminDb().auth.admin.deleteUser(user.id)
 
   redirect('/')
 }

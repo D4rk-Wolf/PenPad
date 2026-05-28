@@ -97,6 +97,10 @@ export async function deleteReport(reportId: string) {
 }
 
 export async function getSubscription(userId: string): Promise<Subscription | null> {
+  // Ensure callers can only retrieve their own subscription, not any arbitrary userId
+  const callerId = await getCurrentUserId()
+  if (callerId !== userId) throw new Error('Forbidden')
+
   const { data, error } = await adminDb()
     .from('subscriptions')
     .select('*')

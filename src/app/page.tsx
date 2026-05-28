@@ -107,8 +107,8 @@ export default function LandingPage() {
             { icon: <Icons.Download size={18} />, num: '02', title: 'PDF Export', desc: 'Client-ready reports with cover page, risk overview, finding details, and recommendations.' },
             { icon: <Icons.Stack size={18} />, num: '03', title: 'Finding Templates', desc: 'Build a reusable library. Import common findings and tweak per engagement — never write the same finding twice.' },
             { icon: <Icons.Eye size={18} />, num: '04', title: 'Risk Visualisation', desc: 'Severity distribution bars and CVSS gauges give clients an instant picture of their exposure.' },
-            { icon: <Icons.Lock size={18} />, num: '05', title: 'Secure by Default', desc: 'Data encrypted at rest and in transit. Row-level security ensures clients only see their own reports.' },
-            { icon: <Icons.Sparkle size={18} />, num: '06', title: 'Smart Suggestions', desc: 'AI-assisted recommendations based on your finding category. Ship faster without sacrificing quality.' },
+            { icon: <Icons.Lock size={18} />, num: '05', title: 'Secure by Default', desc: 'Data encrypted at rest and in transit. Server-enforced access controls ensure your data stays isolated from other accounts.' },
+            { icon: <Icons.Stack size={18} />, num: '06', title: 'Status Tracking', desc: 'Move reports through Draft → Active → Final. Clear status at a glance so nothing ships before it\'s ready.' },
           ].map(({ icon, num, title, desc }) => (
             <div key={num} className="feature-cell">
               <div className="feature-cell-icon">{icon}</div>
@@ -164,7 +164,7 @@ export default function LandingPage() {
             <div style={{ fontSize: '36px', fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--fg)', lineHeight: 1, marginBottom: '4px' }}>£0</div>
             <div style={{ fontSize: 'var(--fs-sm)', color: 'var(--fg-muted)', marginBottom: '20px' }}>Up to 3 reports, 10 findings each</div>
             <ul className="price-features" style={{ marginBottom: '24px' }}>
-              {['PDF export', 'CVSS v3.1 scoring', 'Finding templates (read)', 'Community support'].map(f => (
+              {['CVSS v3.1 scoring', 'Finding templates (read)', 'Status tracking', 'Community support'].map(f => (
                 <li key={f}>
                   <Icons.Check size={14} />
                   <span style={{ fontSize: 'var(--fs-sm)', color: 'var(--fg-muted)' }}>{f}</span>
@@ -182,7 +182,7 @@ export default function LandingPage() {
             </div>
             <div style={{ fontSize: 'var(--fs-sm)', color: 'var(--fg-muted)', marginBottom: '20px' }}>Unlimited reports and findings</div>
             <ul className="price-features" style={{ marginBottom: '24px' }}>
-              {['Everything in Free', 'Unlimited reports', 'Full template library', 'AI-assisted recommendations', 'Priority support'].map(f => (
+              {['Everything in Free', 'Unlimited reports', 'PDF export', 'Full template library', 'Priority support'].map(f => (
                 <li key={f}>
                   <Icons.Check size={14} />
                   <span style={{ fontSize: 'var(--fs-sm)', color: 'var(--fg-muted)' }}>{f}</span>

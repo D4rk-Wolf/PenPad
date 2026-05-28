@@ -1,0 +1,10 @@
+{
+  "functions": {
+    "src/app/(app)/reports/[id]/export/route.tsx": {
+      "maxDuration": 60
+    },
+    "src/app/api/stripe/webhook/route.ts": {
+      "maxDuration": 30
+    }
+  }
+}
