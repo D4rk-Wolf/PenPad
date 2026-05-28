@@ -48,6 +48,7 @@ export function FindingForm({
   isPro: boolean
 }) {
   const [fields, setFields] = useState<Fields>(EMPTY)
+  const [error, setError]   = useState<string | null>(null)
   const action = createFinding.bind(null, reportId)
 
   function applyTemplate(t: TemplateLike) {
@@ -63,8 +64,13 @@ export function FindingForm({
   }
 
   async function handleAction(formData: FormData) {
-    await action(formData)
-    setFields(EMPTY)
+    setError(null)
+    try {
+      await action(formData)
+      setFields(EMPTY)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save finding. Please try again.')
+    }
   }
 
   return (
@@ -182,6 +188,11 @@ export function FindingForm({
           />
         </Field>
 
+        {error && (
+          <p role="alert" style={{ fontSize: 'var(--fs-sm)', color: 'var(--sev-critical)', margin: '0' }}>
+            {error}
+          </p>
+        )}
         <div>
           <SubmitButton />
         </div>
