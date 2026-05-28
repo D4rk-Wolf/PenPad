@@ -53,6 +53,7 @@ We do not sell your data to third parties. We do not use your report content to 
 • **Supabase** (Supabase Inc.) — database and authentication. Data is hosted in the EU (eu-west-2 region).
 • **Stripe** (Stripe Inc.) — payment processing. Stripe is PCI-DSS Level 1 certified.
 • **Vercel** (Vercel Inc.) — hosting and edge delivery.
+• **Sentry** (Functional Software Inc., USA) — error monitoring and session replay. Sentry captures application errors, performance traces, and — for a small percentage of sessions — screen recordings to help us diagnose and fix bugs. All replay recordings mask text input and block media. Sentry is SOC 2 Type II certified. Data may be transferred to the USA under Standard Contractual Clauses. See Sentry's privacy policy at sentry.io/privacy.
 
 Each sub-processor has their own privacy policy and data processing agreements in place.`,
           },
@@ -79,7 +80,7 @@ To exercise any of these rights, email us at privacy@d4rkwolf.co.uk.`,
           },
           {
             title: '8. Security',
-            body: 'All data is encrypted in transit via TLS. Database contents are encrypted at rest. We apply row-level security so users can only access their own data. We conduct regular security reviews.',
+            body: 'All data is encrypted in transit via TLS. Database contents are encrypted at rest. We enforce server-side access controls so users can only access their own data. We conduct regular security reviews.',
           },
           {
             title: '9. Changes to this policy',

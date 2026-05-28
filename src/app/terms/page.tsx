@@ -56,9 +56,9 @@ PenPad is intended for professional security testing work. Using it to document 
           },
           {
             title: '6. Subscription and payment',
-            body: `**Free plan**: Access to core features with limits (3 reports, 10 findings each). No payment required.
+            body: `**Free plan**: Access to core features with limits: up to 3 reports and up to 10 findings per report. Includes CVSS v3.1 scoring, finding templates (read access), and status tracking. No payment required.
 
-**Pro plan**: £49/month, billed monthly via Stripe. Includes unlimited reports and findings, full template library, and PDF export.
+**Pro plan**: £49/month, billed monthly via Stripe. Includes unlimited reports, unlimited findings per report, PDF export, full template library (create and edit), and priority support.
 
 Subscriptions renew automatically. You may cancel at any time via Settings → Billing → Manage subscription. Cancellation takes effect at the end of the current billing period — no partial refunds are issued for unused time.
 
