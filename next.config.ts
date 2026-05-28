@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const securityHeaders = [
   { key: 'X-DNS-Prefetch-Control', value: 'on' },
@@ -15,7 +16,10 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline'",    // required for CSS-in-JS / inline styles
       "img-src 'self' data: blob:",
       "font-src 'self'",
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+      // Sentry event ingestion added alongside Supabase realtime WebSockets
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.sentry.io https://*.ingest.sentry.io",
+      // Session Replay builds a Web Worker from a blob: URL
+      "worker-src blob:",
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self'",
@@ -42,4 +46,23 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  org: "d4rkwolf-o6",
+  project: "penpad",
+
+  // Silences the Sentry CLI output during builds — errors still surface
+  silent: !process.env.CI,
+
+  // Upload source maps to Sentry for readable production stack traces.
+  // Requires SENTRY_AUTH_TOKEN in the build environment.
+  // Generate a token at: https://d4rkwolf-o6.sentry.io/settings/auth-tokens/
+  sourcemaps: {
+    deleteSourcemapsAfterUpload: true,
+  },
+
+  // Tree-shake Sentry debug code from production bundles
+  disableLogger: true,
+
+  // Automatically instrument Next.js server components and API routes
+  autoInstrumentServerFunctions: true,
+});

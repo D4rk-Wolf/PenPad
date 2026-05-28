@@ -23,7 +23,8 @@
     "postgres": "^3.4.9",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "stripe": "^22.1.1"
+    "stripe": "^22.1.1",
+    "@sentry/nextjs": "^10"
   },
   "devDependencies": {
     "@base-ui/react": "^1.5.0",
@@ -48,11 +49,5 @@
     "typescript": "^5",
     "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^4.1.7"
-  },
-  "pnpm": {
-    "overrides": {
-      "esbuild@<=0.24.2": ">=0.25.0",
-      "postcss@<8.5.10": ">=8.5.10"
-    }
   }
 }

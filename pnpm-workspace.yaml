@@ -1,0 +1,6 @@
+packages: []
+
+# Security overrides — moved here from package.json (pnpm 11+ ignores the "pnpm" field there)
+overrides:
+  esbuild@<=0.24.2: '>=0.25.0'
+  postcss@<8.5.10: '>=8.5.10'
