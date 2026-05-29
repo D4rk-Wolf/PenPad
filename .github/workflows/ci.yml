@@ -81,6 +81,15 @@ jobs:
           NEXT_PUBLIC_SENTRY_DSN: ${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}
 
   # ── 4. Run DB migrations before any production deploy ───────────────────────
+  #
+  # Uses the Supabase Management API (HTTPS) rather than a direct Postgres
+  # connection. The direct host (db.*.supabase.co) is IPv6-only; the pooler
+  # returns "Tenant not found" for this project. The Management API works from
+  # any network and only requires SUPABASE_ACCESS_TOKEN.
+  #
+  # To generate SUPABASE_ACCESS_TOKEN:
+  #   https://supabase.com/dashboard/account/tokens
+  # Add it as a GitHub Actions secret named SUPABASE_ACCESS_TOKEN.
   migrate:
     name: DB Migrations
     runs-on: ubuntu-latest
@@ -88,19 +97,56 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
       - uses: actions/checkout@v4
-      - uses: supabase/setup-cli@v1
-        with:
-          version: latest
-      - name: Apply migrations
-        # DATABASE_URL_DIRECT must be the Supabase transaction-pooler URL (port 6543).
-        # The direct db.*.supabase.co:5432 resolves to IPv6 unreachable from GitHub Actions.
-        # The session pooler (port 5432) isn't provisioned on this project's region.
-        # supabase db push uses simple DDL SQL — no advisory locks — so the transaction
-        # pooler works correctly for migration tracking.
-        # Format: postgresql://postgres.PROJECT_REF:PASS@aws-0-REGION.pooler.supabase.com:6543/postgres
-        run: supabase db push --db-url "$DATABASE_URL_DIRECT"
+      - name: Apply pending migrations via Supabase API
         env:
-          DATABASE_URL_DIRECT: ${{ secrets.DATABASE_URL_DIRECT }}
+          PROJECT_REF: vtdmtnpsybqmcgtdvblu
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          API="https://api.supabase.com/v1/projects/${PROJECT_REF}/database/query"
+
+          # Execute SQL via the Supabase Management API (no direct DB connection needed)
+          run_sql() {
+            local sql="$1"
+            local result
+            result=$(curl -sf -X POST "$API" \
+              -H "Authorization: Bearer ${SUPABASE_ACCESS_TOKEN}" \
+              -H "Content-Type: application/json" \
+              -d "$(python3 -c "import json,sys; print(json.dumps({'query': sys.argv[1]}))" "$sql")")
+            echo "$result"
+          }
+
+          # Ensure the migration tracking table exists
+          run_sql "CREATE SCHEMA IF NOT EXISTS supabase_migrations;
+          CREATE TABLE IF NOT EXISTS supabase_migrations.schema_migrations (
+            version  text PRIMARY KEY,
+            name     text,
+            statements text[]
+          );" > /dev/null
+
+          # Get already-applied versions
+          APPLIED=$(run_sql "SELECT version FROM supabase_migrations.schema_migrations ORDER BY version" \
+            | python3 -c "import json,sys; print('\n'.join(r['version'] for r in json.load(sys.stdin)))" 2>/dev/null || echo "")
+
+          # Apply each migration file in version order
+          for f in $(ls supabase/migrations/*.sql | sort); do
+            VERSION=$(basename "$f" | cut -d'_' -f1)
+            NAME=$(basename "$f" .sql | sed "s/^${VERSION}_//")
+
+            if echo "$APPLIED" | grep -qx "$VERSION"; then
+              echo "✓  $VERSION ($NAME) — already applied"
+            else
+              echo "→  Applying $VERSION ($NAME)..."
+              SQL=$(cat "$f")
+              run_sql "$SQL" > /dev/null
+              # Record the migration
+              run_sql "INSERT INTO supabase_migrations.schema_migrations (version, name) VALUES ('${VERSION}', '${NAME}') ON CONFLICT (version) DO NOTHING;" > /dev/null
+              echo "✓  $VERSION applied"
+            fi
+          done
+
+          echo "Migration step complete."
 
   # ── 5. Deploy to production (main only, after migrations) ───────────────────
   deploy-production:
