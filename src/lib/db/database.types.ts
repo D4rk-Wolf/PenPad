@@ -142,6 +142,21 @@ export type Database = {
         }
         Relationships: []
       }
+      stripe_events_processed: {
+        Row: {
+          event_id: string
+          processed_at: string
+        }
+        Insert: {
+          event_id: string
+          processed_at?: string
+        }
+        Update: {
+          event_id?: string
+          processed_at?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           current_period_end: string | null
@@ -172,18 +187,27 @@ export type Database = {
         }
         Relationships: []
       }
-      stripe_events_processed: {
+      user_branding: {
         Row: {
-          event_id: string
-          processed_at: string
+          company_name: string | null
+          id: string
+          primary_color: string | null
+          updated_at: string
+          user_id: string
         }
         Insert: {
-          event_id: string
-          processed_at?: string
+          company_name?: string | null
+          id?: string
+          primary_color?: string | null
+          updated_at?: string
+          user_id: string
         }
         Update: {
-          event_id?: string
-          processed_at?: string
+          company_name?: string | null
+          id?: string
+          primary_color?: string | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

@@ -13,8 +13,7 @@ export async function getBranding(): Promise<UserBranding | null> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Unauthenticated')
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (adminDb() as any)
+  const { data, error } = await adminDb()
     .from('user_branding')
     .select('*')
     .eq('user_id', user.id)
@@ -38,8 +37,7 @@ export async function updateBranding(formData: FormData) {
     throw new Error('Brand colour must be a valid hex value (e.g. #1d4ed8)')
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (adminDb() as any)
+  const { error } = await adminDb()
     .from('user_branding')
     .upsert(
       { user_id: user.id, company_name: companyName, primary_color: primaryColor, updated_at: new Date().toISOString() },

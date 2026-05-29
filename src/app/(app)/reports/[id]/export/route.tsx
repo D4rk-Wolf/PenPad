@@ -56,8 +56,7 @@ export async function GET(
       .order('sort_order')
       .order('created_at')
       .limit(MAX_FINDINGS_IN_EXPORT),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (adminDb() as any)
+    adminDb()
       .from('user_branding')
       .select('*')
       .eq('user_id', user.id)
