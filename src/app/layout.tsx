@@ -37,7 +37,11 @@ export const metadata: Metadata = {
 // suppressHydrationWarning on <html> prevents a React mismatch when the script
 // flips data-theme before hydration.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const THEME_SCRIPT: any = `(function(){var t=localStorage.getItem('penpad-theme');document.documentElement.setAttribute('data-theme',t==='dark'?'dark':'light');})()`
+// If the user has an explicit stored preference, honour it.
+// Otherwise fall back to the OS prefers-color-scheme setting.
+// This runs synchronously before first paint to avoid any flash.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const THEME_SCRIPT: any = `(function(){var s=localStorage.getItem('penpad-theme');var t=(s==='light'||s==='dark')?s:(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);})()`
 
 export default function RootLayout({
   children,

@@ -2,32 +2,74 @@
 
 import { createContext, useContext, useEffect, useState } from 'react'
 
-type Theme = 'light' | 'dark'
+export type ThemeMode = 'light' | 'dark' | 'system'
+export type ResolvedTheme = 'light' | 'dark'
+
+function getSystemTheme(): ResolvedTheme {
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+}
+
+function resolveTheme(mode: ThemeMode): ResolvedTheme {
+  return mode === 'system' ? getSystemTheme() : mode
+}
+
+function readStoredMode(): ThemeMode {
+  if (typeof window === 'undefined') return 'system'
+  const s = localStorage.getItem('penpad-theme')
+  return s === 'light' || s === 'dark' ? s : 'system'
+}
 
 const ThemeContext = createContext<{
-  theme: Theme
+  mode: ThemeMode
+  theme: ResolvedTheme
+  setMode: (mode: ThemeMode) => void
   toggleTheme: () => void
-}>({ theme: 'light', toggleTheme: () => {} })
+}>({
+  mode: 'system',
+  theme: 'light',
+  setMode: () => {},
+  toggleTheme: () => {},
+})
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window === 'undefined') return 'light'
-    return (localStorage.getItem('penpad-theme') as Theme) || 'light'
-  })
+  const [mode, setModeState] = useState<ThemeMode>(readStoredMode)
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(() =>
+    typeof window === 'undefined' ? 'light' : resolveTheme(readStoredMode())
+  )
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme)
-  }, [theme])
+    const apply = () => {
+      const resolved = resolveTheme(mode)
+      setResolvedTheme(resolved)
+      document.documentElement.setAttribute('data-theme', resolved)
+    }
 
+    apply()
+
+    // When following the system, re-apply whenever the OS theme changes
+    if (mode === 'system') {
+      const mq = window.matchMedia('(prefers-color-scheme: dark)')
+      mq.addEventListener('change', apply)
+      return () => mq.removeEventListener('change', apply)
+    }
+  }, [mode])
+
+  function setMode(next: ThemeMode) {
+    setModeState(next)
+    if (next === 'system') {
+      localStorage.removeItem('penpad-theme')
+    } else {
+      localStorage.setItem('penpad-theme', next)
+    }
+  }
+
+  // Cycles: system → light → dark → system
   function toggleTheme() {
-    const next: Theme = theme === 'light' ? 'dark' : 'light'
-    setTheme(next)
-    localStorage.setItem('penpad-theme', next)
-    document.documentElement.setAttribute('data-theme', next)
+    setMode(mode === 'system' ? 'light' : mode === 'light' ? 'dark' : 'system')
   }
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={{ mode, theme: resolvedTheme, setMode, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
   )

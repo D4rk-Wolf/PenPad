@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { FileText, BookOpen, Settings, Sun, Moon, X } from 'lucide-react'
+import { FileText, BookOpen, Settings, Sun, Moon, Monitor, X } from 'lucide-react'
 import { useTheme } from '@/components/theme-provider'
 import { cn } from '@/lib/utils'
 
@@ -20,7 +20,7 @@ const navLinks = [
 
 export function Sidebar({ user, signOut, open, onClose }: SidebarProps) {
   const pathname = usePathname()
-  const { theme, toggleTheme } = useTheme()
+  const { mode, toggleTheme } = useTheme()
   const initial = user.email[0].toUpperCase()
 
   return (
@@ -101,9 +101,14 @@ export function Sidebar({ user, signOut, open, onClose }: SidebarProps) {
             <button
               onClick={toggleTheme}
               className="shrink-0 text-muted-foreground hover:text-foreground"
-              aria-label="Toggle theme"
+              aria-label={mode === 'system' ? 'Theme: following system' : mode === 'light' ? 'Theme: light' : 'Theme: dark'}
+              title={mode === 'system' ? 'Following system — click to set light' : mode === 'light' ? 'Light — click to set dark' : 'Dark — click to follow system'}
             >
-              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              {mode === 'system'
+                ? <Monitor className="w-4 h-4" />
+                : mode === 'light'
+                  ? <Moon className="w-4 h-4" />
+                  : <Sun className="w-4 h-4" />}
             </button>
           </div>
           <form action={signOut}>
