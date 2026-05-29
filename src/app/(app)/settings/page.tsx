@@ -8,6 +8,7 @@ import { updateProfile, updatePassword, deleteAccount } from '@/app/actions/sett
 import { getBranding, updateBranding } from '@/app/actions/branding'
 import { Icons } from '@/components/penpad/icons'
 import { Field } from '@/components/penpad/ui'
+import { SentryTestButton } from '@/components/sentry-test-button'
 
 async function startCheckout() {
   'use server'
@@ -66,6 +67,7 @@ export default async function SettingsPage({
     { label: 'Billing',     href: '#billing' },
     { label: 'Security',    href: '#security' },
     { label: 'Branding',    href: '#branding' },
+    { label: 'Dev Tools',   href: '#debug' },
     { label: 'Danger Zone', href: '#danger' },
   ]
 
@@ -273,6 +275,15 @@ export default async function SettingsPage({
                 </div>
               </form>
             )}
+          </div>
+
+          <div className="divider" />
+
+          {/* Sentry connectivity test — remove after verifying */}
+          <div id="debug" className="settings-section" style={{ scrollMarginTop: '80px' }}>
+            <h2 className="settings-section-title" style={{ color: 'var(--fg-muted)' }}>Developer tools</h2>
+            <p className="settings-section-sub">Temporary — remove once Sentry is confirmed working.</p>
+            <SentryTestButton />
           </div>
 
           <div className="divider" />
