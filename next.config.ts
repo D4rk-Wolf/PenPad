@@ -28,6 +28,9 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // @react-pdf/renderer uses Node.js native APIs (Buffer, fs) and must not
+  // be bundled by Turbopack/Webpack — mark as external so it's required at runtime.
+  serverExternalPackages: ['@react-pdf/renderer'],
   experimental: {
     serverActions: {
       allowedOrigins: [
