@@ -146,14 +146,8 @@ cp .env.local.example .env.local
 Apply all migrations to your Supabase project using the Supabase CLI:
 
 ```bash
-# Install Supabase CLI if needed
-npm install -g supabase
-
-# Link to your project
-supabase link --project-ref <your-project-ref>
-
-# Push migrations
-supabase db push
+# Apply all pending migrations (uses DATABASE_URL_DIRECT from .env.local)
+pnpm db:migrate
 ```
 
 Migrations live in `supabase/migrations/` and are applied in timestamp order. The CI pipeline also runs migrations automatically on every push to `main`.

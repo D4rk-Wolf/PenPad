@@ -22,11 +22,15 @@ export function adminDb(): AdminClient {
   return _client
 }
 
+// Hoisted to module scope so they are compiled once, not on every camel() call
+const SNAKE_RE   = /_([a-z])/g
+const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}T/
+
 export function camel<T>(row: Record<string, unknown>): T {
   return Object.fromEntries(
     Object.entries(row).map(([k, v]) => [
-      k.replace(/_([a-z])/g, (_, c: string) => c.toUpperCase()),
-      typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(v) ? new Date(v) : v,
+      k.replace(SNAKE_RE, (_, c: string) => c.toUpperCase()),
+      typeof v === 'string' && ISO_DATE_RE.test(v) ? new Date(v) : v,
     ])
   ) as T
 }

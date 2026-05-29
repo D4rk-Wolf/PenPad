@@ -6,6 +6,7 @@ export const dynamic = 'force-dynamic'
 import { createCheckoutSession, createCustomerPortalSession } from '@/lib/stripe'
 import { updateProfile, updatePassword, deleteAccount } from '@/app/actions/settings'
 import { Icons } from '@/components/penpad/icons'
+import { Field } from '@/components/penpad/ui'
 
 async function startCheckout() {
   'use server'
@@ -118,12 +119,10 @@ export default async function SettingsPage({
             <h2 className="settings-section-title">Profile</h2>
             <p className="settings-section-sub">Your account information.</p>
             <form action={updateProfile} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div className="field">
-                <label className="field-label">Email</label>
+              <Field label="Email">
                 <input className="input" type="email" defaultValue={user.email ?? ''} disabled style={{ opacity: 0.65 }} />
-              </div>
-              <div className="field">
-                <label className="field-label">Full name <span className="field-optional">optional</span></label>
+              </Field>
+              <Field label="Full name" optional>
                 <input
                   className="input"
                   type="text"
@@ -132,7 +131,7 @@ export default async function SettingsPage({
                   placeholder="Jamie Foster"
                   maxLength={100}
                 />
-              </div>
+              </Field>
               <div>
                 <button type="submit" className="btn btn-outline btn-sm">Save changes</button>
               </div>
@@ -212,14 +211,12 @@ export default async function SettingsPage({
             <h2 className="settings-section-title">Security</h2>
             <p className="settings-section-sub">Change your password.</p>
             <form action={updatePassword} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div className="field">
-                <label className="field-label">Current password</label>
+              <Field label="Current password">
                 <input className="input" type="password" name="currentPassword" placeholder="••••••••" required autoComplete="current-password" />
-              </div>
-              <div className="field">
-                <label className="field-label">New password <span className="field-hint">Min 8 characters</span></label>
+              </Field>
+              <Field label="New password" hint="Min 8 characters">
                 <input className="input" type="password" name="newPassword" placeholder="••••••••" required minLength={8} autoComplete="new-password" />
-              </div>
+              </Field>
               <div>
                 <button type="submit" className="btn btn-outline btn-sm">Update password</button>
               </div>
@@ -233,10 +230,7 @@ export default async function SettingsPage({
             <h2 className="settings-section-title" style={{ color: 'var(--sev-critical)' }}>Danger zone</h2>
             <p className="settings-section-sub">Permanently delete your account and all data. This cannot be undone.</p>
             <form action={deleteAccount} style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: '400px' }}>
-              <div className="field">
-                <label className="field-label">
-                  Type <strong style={{ color: 'var(--fg)' }}>delete my account</strong> to confirm
-                </label>
+              <Field label={<>Type <strong style={{ color: 'var(--fg)' }}>delete my account</strong> to confirm</>}>
                 <input
                   className="input"
                   type="text"
@@ -246,7 +240,7 @@ export default async function SettingsPage({
                   autoComplete="off"
                   style={{ fontFamily: 'var(--font-mono)' }}
                 />
-              </div>
+              </Field>
               <div>
                 <button
                   type="submit"

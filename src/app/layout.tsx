@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { IBM_Plex_Sans, IBM_Plex_Mono, IBM_Plex_Serif } from 'next/font/google'
-import Script from 'next/script'
 import { Toaster } from '@/components/ui/sonner'
 import './globals.css'
 
@@ -31,6 +30,14 @@ export const metadata: Metadata = {
     'The reporting workbench for working penetration testers. Log findings, score with CVSS v3.1, and ship client-ready PDF reports.',
 }
 
+// Static compile-time constant — never derived from user input, safe for
+// dangerouslySetInnerHTML. Inlined to avoid a network round-trip for
+// theme-init.js. Runs synchronously before paint → no flash of wrong theme.
+// suppressHydrationWarning on <html> prevents a React mismatch when the script
+// flips data-theme before hydration.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const THEME_SCRIPT: any = `(function(){var t=localStorage.getItem('penpad-theme');document.documentElement.setAttribute('data-theme',t==='dark'?'dark':'light');})()`
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -38,11 +45,12 @@ export default function RootLayout({
     <html
       lang="en"
       data-theme="light"
+      suppressHydrationWarning
       className={`${ibmPlexSans.variable} ${ibmPlexMono.variable} ${ibmPlexSerif.variable}`}
     >
       <head>
-        {/* Runs before paint to apply stored theme without flash */}
-        <Script src="/theme-init.js" strategy="beforeInteractive" />
+        {/* Runs synchronously before paint — applies stored theme without flash */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
       <body>
         {children}

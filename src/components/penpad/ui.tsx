@@ -147,7 +147,7 @@ export function SeverityCounts({ counts }: { counts: SeverityCountsMap }) {
 // ─── Field ────────────────────────────────────────────────────────────────────
 
 interface FieldProps {
-  label: string
+  label: ReactNode
   optional?: boolean
   hint?: string
   children: ReactNode

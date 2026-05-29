@@ -23,6 +23,7 @@ export async function getReports(): Promise<Report[]> {
     .select('*')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
+    .limit(100)
   if (error) throw new Error(error.message)
   return (data ?? []).map(r => camel<Report>(r as Record<string, unknown>))
 }
