@@ -1,8 +1,12 @@
 import { defineConfig } from 'vitest/config'
-import tsconfigPaths from 'vite-tsconfig-paths'
+import { resolve } from 'path'
 
 export default defineConfig({
-  plugins: [tsconfigPaths()],
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, 'src'),
+    },
+  },
   test: {
     // Node environment for server-side logic (actions, lib utilities).
     // Use 'jsdom' per-file with @vitest/environment-jsdom for component tests.

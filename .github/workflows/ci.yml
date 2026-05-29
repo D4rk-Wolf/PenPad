@@ -12,6 +12,8 @@ concurrency:
 
 env:
   PNPM_VERSION: '9'
+  # GitHub Actions drops Node 20 for actions on 2026-06-02; opt in now.
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
 jobs:
   # ── 1. Secret scanning — cheapest gate, runs first ──────────────────────────
@@ -90,8 +92,12 @@ jobs:
         with:
           version: latest
       - name: Apply migrations
-        # Uses the direct (non-pooled) connection — required by Supabase CLI.
-        # supabase db push applies all pending migrations from supabase/migrations/.
+        # DATABASE_URL_DIRECT must be the Supabase session-pooler URL (port 5432 on
+        # pooler.supabase.com) — NOT the direct db.*.supabase.co host which resolves
+        # to IPv6 and is unreachable from GitHub Actions runners.
+        # Session pooler maintains persistent connections (unlike transaction pooler)
+        # so advisory locks and SET LOCAL work correctly.
+        # Format: postgresql://postgres.PROJECT_REF:PASS@aws-0-REGION.pooler.supabase.com:5432/postgres
         run: supabase db push --db-url "$DATABASE_URL_DIRECT"
         env:
           DATABASE_URL_DIRECT: ${{ secrets.DATABASE_URL_DIRECT }}
