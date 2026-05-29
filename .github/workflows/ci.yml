@@ -92,12 +92,12 @@ jobs:
         with:
           version: latest
       - name: Apply migrations
-        # DATABASE_URL_DIRECT must be the Supabase session-pooler URL (port 5432 on
-        # pooler.supabase.com) — NOT the direct db.*.supabase.co host which resolves
-        # to IPv6 and is unreachable from GitHub Actions runners.
-        # Session pooler maintains persistent connections (unlike transaction pooler)
-        # so advisory locks and SET LOCAL work correctly.
-        # Format: postgresql://postgres.PROJECT_REF:PASS@aws-0-REGION.pooler.supabase.com:5432/postgres
+        # DATABASE_URL_DIRECT must be the Supabase transaction-pooler URL (port 6543).
+        # The direct db.*.supabase.co:5432 resolves to IPv6 unreachable from GitHub Actions.
+        # The session pooler (port 5432) isn't provisioned on this project's region.
+        # supabase db push uses simple DDL SQL — no advisory locks — so the transaction
+        # pooler works correctly for migration tracking.
+        # Format: postgresql://postgres.PROJECT_REF:PASS@aws-0-REGION.pooler.supabase.com:6543/postgres
         run: supabase db push --db-url "$DATABASE_URL_DIRECT"
         env:
           DATABASE_URL_DIRECT: ${{ secrets.DATABASE_URL_DIRECT }}
