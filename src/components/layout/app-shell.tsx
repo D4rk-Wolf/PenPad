@@ -34,7 +34,9 @@ export function AppShell({ user, signOut, children }: AppShellProps) {
         <div className="sidebar-brand">
           <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', color: 'inherit' }}>
             <BrandMark size={22} />
-            <span className="sidebar-brand-name">PenPad</span>
+            <span className="sidebar-brand-name">
+              <span style={{ color: 'var(--accent)' }}>Pen</span>Pad
+            </span>
           </Link>
         </div>
 

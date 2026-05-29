@@ -28,6 +28,10 @@
   --fg-subtle:        #a5a39c;
   --fg-inverse:       #fafaf9;
 
+  /* —— Brand mark ——————————————————————————————— */
+  --mark-bg:          #1a1a17;  /* badge background — always dark */
+  --mark-fg:          #b91c1c;  /* chevron / cursor colour */
+
   /* —— Brand (crimson, used surgically) ————————— */
   --accent:           #b91c1c;
   --accent-hover:     #991b1b;
@@ -125,6 +129,10 @@
   --fg-muted:         #78766f;
   --fg-subtle:        #504e49;
   --fg-inverse:       #121214;
+
+  /* Brand mark — elevated card bg so it reads against the dark page */
+  --mark-bg:          #262630;
+  --mark-fg:          #d94444;
 
   /* Accent desaturated per guide — vivid red → muted red */
   --accent:           #d94444;
