@@ -1,5 +1,7 @@
 'use client'
 
+import { useTransition } from 'react'
+import { toast } from 'sonner'
 import { deleteFinding } from '@/app/actions/findings'
 import { saveTemplate } from '@/app/actions/templates'
 import { Icons } from '@/components/penpad/icons'
@@ -17,6 +19,18 @@ export function FindingCard({
 }) {
   const severity = (finding.severity ?? 'info') as 'critical' | 'high' | 'medium' | 'low' | 'info'
   const cvss = Number(finding.cvssScore ?? 0)
+  const [isPending, startTransition] = useTransition()
+
+  function handleSaveTemplate() {
+    startTransition(async () => {
+      try {
+        await saveTemplate(finding.id)
+        toast.success('Template saved')
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : 'Failed to save template')
+      }
+    })
+  }
 
   return (
     <div className="finding-expand-card">
@@ -60,12 +74,16 @@ export function FindingCard({
           </button>
         </form>
         {isPro && (
-          <form action={saveTemplate.bind(null, finding.id)}>
-            <button type="submit" className="btn btn-ghost btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Icons.Stack size={13} />
-              Save as template
-            </button>
-          </form>
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+            disabled={isPending}
+            onClick={handleSaveTemplate}
+          >
+            <Icons.Stack size={13} />
+            {isPending ? 'Saving…' : 'Save as template'}
+          </button>
         )}
       </div>
     </div>

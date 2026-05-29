@@ -1,13 +1,12 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { getMyTemplates, deleteTemplate } from '@/app/actions/templates'
+import { getMyTemplates } from '@/app/actions/templates'
 import { getMySubscription } from '@/lib/subscriptions'
+import { TemplateList } from '@/components/templates/template-list'
+import { Icons } from '@/components/penpad/icons'
 
 export const dynamic = 'force-dynamic'
-import { Icons } from '@/components/penpad/icons'
-import { SeverityPill } from '@/components/penpad/ui'
-import type { Severity } from '@/lib/utils'
 
 export default async function TemplatesPage() {
   const supabase = await createClient()
@@ -60,58 +59,8 @@ export default async function TemplatesPage() {
             </div>
           </div>
 
-          {/* Template table */}
-          <div className="tpl-table-wrap">
-            <div className="tpl-toolbar">
-              <div className="tpl-search">
-                <Icons.Search size={14} />
-                <input placeholder="Search templates…" />
-              </div>
-            </div>
-
-            {templates.length === 0 ? (
-              <div className="empty">
-                <div className="empty-icon"><Icons.Stack size={22} /></div>
-                <p className="empty-title">No templates yet</p>
-                <p className="empty-subtitle">On any finding, click &quot;Save as template&quot; to build your library.</p>
-              </div>
-            ) : (
-              <table className="tbl">
-                <thead>
-                  <tr>
-                    <th>Title</th>
-                    <th>Severity</th>
-                    <th>Category</th>
-                    <th>CVSS</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {templates.map(t => {
-                    const severity = (t.severity ?? 'info') as Severity
-                    const cvss = Number(t.cvssScore ?? 0)
-                    return (
-                      <tr key={t.id} className="tbl-row">
-                        <td style={{ fontWeight: 500 }}>{t.title}</td>
-                        <td><SeverityPill severity={severity as 'critical' | 'high' | 'medium' | 'low' | 'info'} /></td>
-                        <td style={{ color: 'var(--fg-muted)', fontSize: 'var(--fs-sm)' }}>—</td>
-                        <td style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--fs-xs)', color: cvss > 0 ? 'var(--fg)' : 'var(--fg-muted)' }}>
-                          {cvss > 0 ? cvss.toFixed(1) : '—'}
-                        </td>
-                        <td>
-                          <form action={deleteTemplate.bind(null, t.id)} style={{ display: 'contents' }}>
-                            <button type="submit" className="btn btn-ghost btn-icon" aria-label="Delete template">
-                              <Icons.Trash size={13} style={{ color: 'var(--fg-muted)' }} />
-                            </button>
-                          </form>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            )}
-          </div>
+          {/* Template table — client component handles search state */}
+          <TemplateList templates={templates} />
         </div>
       )}
     </div>

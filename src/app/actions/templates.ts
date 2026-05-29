@@ -33,7 +33,8 @@ export async function saveTemplate(findingId: string) {
     .select('*, reports!inner(user_id)')
     .eq('id', findingId)
     .maybeSingle()
-  if (!findingRow || (findingRow.reports as { user_id: string }).user_id !== user.id) return
+  if (!findingRow || (findingRow.reports as { user_id: string }).user_id !== user.id)
+    throw new Error('Finding not found or access denied')
 
   const f = camel<Finding>(findingRow as Record<string, unknown>)
 
