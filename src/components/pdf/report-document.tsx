@@ -3,6 +3,11 @@ import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
 import type { Report, Finding } from '@/lib/db/schema'
 import type { Severity } from '@/lib/utils'
 
+export interface PdfBranding {
+  companyName:  string | null | undefined
+  primaryColor: string | null | undefined
+}
+
 const BRAND_BLUE = '#1d4ed8'
 const BRAND_BLUE_MID = '#2563eb'
 
@@ -379,7 +384,10 @@ const riskCells = [
   { key: 'info',     label: 'Info',     bg: '#f8fafc', border: '#e2e8f0', color: '#64748b' },
 ]
 
-function CoverPage({ report, findings }: { report: Report; findings: Finding[] }) {
+function CoverPage({ report, findings, branding }: { report: Report; findings: Finding[]; branding?: PdfBranding }) {
+  const brandColor  = branding?.primaryColor || BRAND_BLUE
+  const brandColor2 = branding?.primaryColor || BRAND_BLUE_MID
+  const brandName   = branding?.companyName  || 'PenPad'
   const counts = countBySeverity(findings)
   const period =
     report.startDate || report.endDate
@@ -388,10 +396,10 @@ function CoverPage({ report, findings }: { report: Report; findings: Finding[] }
 
   return (
     <Page size="A4" style={styles.coverPage}>
-      <View style={styles.coverHeaderBand}>
+      <View style={[styles.coverHeaderBand, { backgroundColor: brandColor }]}>
         <View style={styles.coverHeaderLeft}>
           <View style={styles.coverDot} />
-          <Text style={styles.coverWordmark}>PENPAD</Text>
+          <Text style={styles.coverWordmark}>{brandName.toUpperCase()}</Text>
         </View>
         <Text style={styles.coverHeaderRight}>
           PENETRATION TEST REPORT / SECURITY ASSESSMENT
@@ -400,12 +408,12 @@ function CoverPage({ report, findings }: { report: Report; findings: Finding[] }
 
       <View style={styles.coverBody}>
         <View style={styles.eyebrowRow}>
-          <View style={styles.eyebrowRule} />
-          <Text style={styles.eyebrowLabel}>SECURITY ASSESSMENT REPORT</Text>
+          <View style={[styles.eyebrowRule, { backgroundColor: brandColor }]} />
+          <Text style={[styles.eyebrowLabel, { color: brandColor }]}>SECURITY ASSESSMENT REPORT</Text>
         </View>
 
         <Text style={styles.coverTitle}>Penetration Test Report</Text>
-        <Text style={styles.coverClient}>{report.clientName}</Text>
+        <Text style={[styles.coverClient, { color: brandColor2 }]}>{report.clientName}</Text>
 
         <View style={styles.divider} />
 
@@ -471,11 +479,15 @@ function FindingsPages({
   report,
   findings,
   sorted,
+  branding,
 }: {
   report: Report
   findings: Finding[]
   sorted: Finding[]
+  branding?: PdfBranding
 }) {
+  const brandColor = branding?.primaryColor || BRAND_BLUE
+  const brandName  = branding?.companyName  || 'PenPad'
   if (sorted.length === 0) {
     return null
   }
@@ -486,10 +498,10 @@ function FindingsPages({
 
   return (
     <Page size="A4" style={styles.findingsPage}>
-      <View style={styles.runningHeader} fixed>
+      <View style={[styles.runningHeader, { borderBottomColor: brandColor }]} fixed>
         <View style={styles.runningHeaderLeft}>
-          <View style={styles.runningDot} />
-          <Text style={styles.runningWordmark}>PenPad</Text>
+          <View style={[styles.runningDot, { backgroundColor: brandColor }]} />
+          <Text style={[styles.runningWordmark, { color: brandColor }]}>{brandName}</Text>
         </View>
         <Text style={styles.runningHeaderRight}>
           {report.clientName} · CONFIDENTIAL
@@ -497,7 +509,7 @@ function FindingsPages({
       </View>
 
       <View style={styles.runningFooter} fixed>
-        <Text>PenPad</Text>
+        <Text>{brandName}</Text>
         <Text style={styles.runningFooterCentre}>{report.clientName}</Text>
         <Text
           render={({ pageNumber, totalPages }) =>
@@ -507,7 +519,7 @@ function FindingsPages({
       </View>
 
       <View style={styles.findingsHeading}>
-        <View style={styles.findingsHeadingCircle}>
+        <View style={[styles.findingsHeadingCircle, { backgroundColor: brandColor }]}>
           <Text style={styles.findingsHeadingCircleText}>F</Text>
         </View>
         <Text style={styles.findingsHeadingLabel}>Findings</Text>
@@ -595,9 +607,11 @@ function FindingsPages({
 export function ReportDocument({
   report,
   findings,
+  branding,
 }: {
   report: Report
   findings: Finding[]
+  branding?: PdfBranding
 }) {
   const sorted = [...findings].sort((a, b) => {
     const sa = severityOrder[a.severity ?? 'info'] ?? 4
@@ -608,8 +622,8 @@ export function ReportDocument({
 
   return (
     <Document>
-      <CoverPage report={report} findings={findings} />
-      <FindingsPages report={report} findings={findings} sorted={sorted} />
+      <CoverPage report={report} findings={findings} branding={branding} />
+      <FindingsPages report={report} findings={findings} sorted={sorted} branding={branding} />
     </Document>
   )
 }

@@ -84,18 +84,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Trusted by */}
-      <div className="landing-section" style={{ paddingBlock: '24px' }}>
-        <p style={{ textAlign: 'center', fontSize: 'var(--fs-xs)', color: 'var(--fg-muted)', letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 500, marginBottom: '16px' }}>
-          Trusted by pentesters at
-        </p>
-        <div style={{ display: 'flex', gap: '32px', justifyContent: 'center', flexWrap: 'wrap', opacity: 0.45 }}>
-          {['D4rkWolf Security', 'Redline Pentest', 'Null Byte Labs', 'HexSec', 'CipherForge'].map(name => (
-            <span key={name} style={{ fontSize: 'var(--fs-sm)', fontWeight: 600, color: 'var(--fg)', letterSpacing: '-0.01em' }}>{name}</span>
-          ))}
-        </div>
-      </div>
-
       {/* Features */}
       <section id="features" className="landing-section">
         <div className="landing-section-eyebrow">Features</div>
@@ -138,19 +126,6 @@ export default function LandingPage() {
             </div>
           ))}
         </div>
-      </section>
-
-      {/* Testimonial */}
-      <section className="landing-section" style={{ maxWidth: '640px' }}>
-        <blockquote style={{ padding: '32px', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', background: 'var(--bg-elev)', position: 'relative' }}>
-          <span style={{ position: 'absolute', top: '16px', left: '24px', fontSize: '32px', color: 'var(--accent)', fontFamily: 'var(--font-serif)', lineHeight: 1 }}>&ldquo;</span>
-          <p style={{ fontSize: 'var(--fs-base)', lineHeight: 1.6, color: 'var(--fg)', marginBottom: '16px', paddingTop: '12px' }}>
-            PenPad cut our report writing time in half. The CVSS scoring and PDF export mean we go from final shell to delivered report in a morning.
-          </p>
-          <footer style={{ fontSize: 'var(--fs-sm)', color: 'var(--fg-muted)' }}>
-            <strong style={{ color: 'var(--fg)' }}>Alex M.</strong> &nbsp;·&nbsp; Lead Penetration Tester, Redline Pentest
-          </footer>
-        </blockquote>
       </section>
 
       {/* Pricing */}

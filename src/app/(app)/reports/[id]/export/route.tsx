@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { renderToBuffer } from '@react-pdf/renderer'
 import { createClient } from '@/lib/supabase/server'
 import { adminDb, camel } from '@/lib/supabase/admin'
-import type { Report, Finding, Subscription } from '@/lib/db/schema'
+import type { Report, Finding, Subscription, UserBranding } from '@/lib/db/schema'
 import { ReportDocument } from '@/components/pdf/report-document'
 
 // Force Node.js runtime — react-pdf uses Node-only APIs (fs, Buffer)
@@ -48,20 +48,29 @@ export async function GET(
   if (!reportRow) return NextResponse.json({ error: 'Not found' }, { status: 404 })
   const report = camel<Report>(reportRow as Record<string, unknown>)
 
-  const { data: findingRows } = await adminDb()
-    .from('findings')
-    .select('*')
-    .eq('report_id', id)
-    .order('sort_order')
-    .order('created_at')
-    .limit(MAX_FINDINGS_IN_EXPORT)
+  const [{ data: findingRows }, { data: brandingRow }] = await Promise.all([
+    adminDb()
+      .from('findings')
+      .select('*')
+      .eq('report_id', id)
+      .order('sort_order')
+      .order('created_at')
+      .limit(MAX_FINDINGS_IN_EXPORT),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (adminDb() as any)
+      .from('user_branding')
+      .select('*')
+      .eq('user_id', user.id)
+      .maybeSingle(),
+  ])
   const findingList = (findingRows ?? []).map(f => camel<Finding>(f as Record<string, unknown>))
+  const branding = brandingRow ? camel<UserBranding>(brandingRow as Record<string, unknown>) : undefined
 
   // Race the render against a hard timeout so we never hit the Vercel wall-clock limit silently
   let buffer: Buffer
   try {
     const renderPromise = renderToBuffer(
-      <ReportDocument report={report} findings={findingList} />
+      <ReportDocument report={report} findings={findingList} branding={branding} />
     )
     const timeoutPromise = new Promise<never>((_, reject) =>
       setTimeout(() => reject(new Error('PDF render timed out')), RENDER_TIMEOUT_MS)

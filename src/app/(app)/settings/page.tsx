@@ -5,6 +5,7 @@ import { getMySubscription } from '@/lib/subscriptions'
 export const dynamic = 'force-dynamic'
 import { createCheckoutSession, createCustomerPortalSession } from '@/lib/stripe'
 import { updateProfile, updatePassword, deleteAccount } from '@/app/actions/settings'
+import { getBranding, updateBranding } from '@/app/actions/branding'
 import { Icons } from '@/components/penpad/icons'
 import { Field } from '@/components/penpad/ui'
 
@@ -54,6 +55,7 @@ export default async function SettingsPage({
 
   const sub = await getMySubscription()
   const isPro = sub?.status === 'active'
+  const branding = isPro ? await getBranding() : null
 
   const { success, error } = await searchParams
   const successMsg = success ? SUCCESS_MESSAGES[success] : null
@@ -63,6 +65,7 @@ export default async function SettingsPage({
     { label: 'Profile',     href: '#profile' },
     { label: 'Billing',     href: '#billing' },
     { label: 'Security',    href: '#security' },
+    { label: 'Branding',    href: '#branding' },
     { label: 'Danger Zone', href: '#danger' },
   ]
 
@@ -221,6 +224,55 @@ export default async function SettingsPage({
                 <button type="submit" className="btn btn-outline btn-sm">Update password</button>
               </div>
             </form>
+          </div>
+
+          <div className="divider" />
+
+          {/* PDF Branding */}
+          <div id="branding" className="settings-section" style={{ scrollMarginTop: '80px' }}>
+            <h2 className="settings-section-title">PDF Branding</h2>
+            <p className="settings-section-sub">
+              Customise the branding on exported reports. Pro feature.
+            </p>
+
+            {!isPro ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', background: 'var(--bg-elev)' }}>
+                <Icons.Lock size={16} style={{ color: 'var(--fg-muted)', flexShrink: 0 }} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 500, fontSize: 'var(--fs-sm)', marginBottom: '2px' }}>Available on Pro</div>
+                  <div style={{ fontSize: 'var(--fs-sm)', color: 'var(--fg-muted)' }}>Replace PenPad branding with your company name and colours on all exported PDFs.</div>
+                </div>
+              </div>
+            ) : (
+              <form action={updateBranding} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <Field label="Company name" optional>
+                  <input
+                    className="input"
+                    type="text"
+                    name="companyName"
+                    defaultValue={branding?.companyName ?? ''}
+                    placeholder="Acme Security"
+                    maxLength={100}
+                  />
+                </Field>
+                <Field label="Brand colour" hint="Hex value — used for headers and accents in the PDF" optional>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <input
+                      type="color"
+                      name="primaryColor"
+                      defaultValue={branding?.primaryColor ?? '#1d4ed8'}
+                      style={{ width: '38px', height: '34px', padding: '2px 3px', borderRadius: 'var(--r-sm)', border: '1px solid var(--border)', cursor: 'pointer', background: 'var(--bg-elev)', flexShrink: 0 }}
+                    />
+                    <span style={{ fontSize: 'var(--fs-sm)', color: 'var(--fg-muted)', fontFamily: 'var(--font-mono)' }}>
+                      {branding?.primaryColor ?? '#1d4ed8'}
+                    </span>
+                  </div>
+                </Field>
+                <div>
+                  <button type="submit" className="btn btn-outline btn-sm">Save branding</button>
+                </div>
+              </form>
+            )}
           </div>
 
           <div className="divider" />

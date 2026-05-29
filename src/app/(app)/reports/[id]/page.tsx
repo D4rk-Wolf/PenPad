@@ -11,7 +11,8 @@ export const dynamic = 'force-dynamic'
 import { FindingForm } from '@/components/findings/finding-form'
 import { FindingCard } from '@/components/findings/finding-card'
 import { Icons } from '@/components/penpad/icons'
-import { StatusPill, SeverityCounts } from '@/components/penpad/ui'
+import { SeverityCounts } from '@/components/penpad/ui'
+import { StatusSelect } from '@/components/reports/status-select'
 
 const SEV_ORDER = { critical: 0, high: 1, medium: 2, low: 3, info: 4 }
 
@@ -60,7 +61,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
           </div>
           <h1 className="page-title">{report.clientName}</h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '4px' }}>
-            <StatusPill status={(report.status ?? 'draft') as 'draft' | 'active' | 'final'} />
+            <StatusSelect reportId={id} status={(report.status ?? 'draft') as 'draft' | 'active' | 'final'} />
             {report.scope && <span style={{ fontSize: 'var(--fs-sm)', color: 'var(--fg-muted)' }}>{report.scope}</span>}
             <SeverityCounts counts={counts} />
           </div>

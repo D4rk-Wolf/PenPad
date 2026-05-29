@@ -50,6 +50,14 @@ export const findingTemplates = pgTable('finding_templates', {
   createdAt:      timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 })
 
+export const userBranding = pgTable('user_branding', {
+  id:           uuid('id').primaryKey().defaultRandom(),
+  userId:       uuid('user_id').notNull().unique(),
+  companyName:  text('company_name'),
+  primaryColor: text('primary_color'),
+  updatedAt:    timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
 export type Report             = typeof reports.$inferSelect
 export type NewReport          = typeof reports.$inferInsert
 export type Finding            = typeof findings.$inferSelect
@@ -57,3 +65,4 @@ export type NewFinding         = typeof findings.$inferInsert
 export type Subscription       = typeof subscriptions.$inferSelect
 export type FindingTemplate    = typeof findingTemplates.$inferSelect
 export type NewFindingTemplate = typeof findingTemplates.$inferInsert
+export type UserBranding       = typeof userBranding.$inferSelect

@@ -113,6 +113,27 @@ export async function updateReport(reportId: string, formData: FormData) {
   revalidatePath('/dashboard')
 }
 
+export async function updateReportStatus(
+  reportId: string,
+  status: 'draft' | 'active' | 'final',
+) {
+  const userId = await getCurrentUserId()
+
+  if (!['draft', 'active', 'final'].includes(status)) {
+    throw new Error('Invalid status')
+  }
+
+  const { error } = await adminDb()
+    .from('reports')
+    .update({ status })
+    .eq('id', reportId)
+    .eq('user_id', userId)
+  if (error) throw new Error(error.message)
+
+  revalidatePath(`/reports/${reportId}`)
+  revalidatePath('/dashboard')
+}
+
 export async function deleteReport(reportId: string) {
   const userId = await getCurrentUserId()
   const { error } = await adminDb()
