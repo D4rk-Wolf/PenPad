@@ -99,30 +99,41 @@
 }
 
 /* —— Dark theme —————————————————————————————————— */
+/*
+ * Background scale follows the UX guide recommendation: dark grey (#121212),
+ * not pure black. Each elevation step is meaningfully lighter so surfaces
+ * read as distinct layers without needing heavy shadows.
+ *
+ *  --bg-sunken  #0e0e11  ← recessed / table stripe
+ *  --bg         #121214  ← page base
+ *  --bg-muted   #1e1e23  ← subtle hover / sidebar
+ *  --bg-elev    #262630  ← cards, modals, dropdowns (visible lift)
+ */
 [data-theme="dark"] {
-  --bg:               #0c0c0d;
-  --bg-elev:          #131316;
-  --bg-muted:         #1a1a1e;
-  --bg-sunken:        #08080a;
+  --bg:               #121214;
+  --bg-elev:          #262630;
+  --bg-muted:         #1e1e23;
+  --bg-sunken:        #0e0e11;
   --bg-overlay:       rgba(0, 0, 0, 0.65);
 
-  --border:           #25252a;
-  --border-strong:    #34343a;
-  --border-subtle:    #1d1d22;
+  --border:           #32323c;
+  --border-strong:    #44444f;
+  --border-subtle:    #28282f;
 
-  --fg:               #ededec;
-  --fg-secondary:     #b8b6b1;
-  --fg-muted:         #7d7b75;
-  --fg-subtle:        #545249;
-  --fg-inverse:       #0c0c0d;
+  --fg:               #e8e8e6;
+  --fg-secondary:     #b2b0ab;
+  --fg-muted:         #78766f;
+  --fg-subtle:        #504e49;
+  --fg-inverse:       #121214;
 
-  --accent:           #ef4444;
-  --accent-hover:     #f87171;
-  --accent-active:    #dc2626;
+  /* Accent desaturated per guide — vivid red → muted red */
+  --accent:           #d94444;
+  --accent-hover:     #e86060;
+  --accent-active:    #c03030;
   --accent-fg:        #ffffff;
-  --accent-soft:      rgba(239, 68, 68, 0.10);
-  --accent-soft-fg:   #fca5a5;
-  --accent-ring:      rgba(239, 68, 68, 0.25);
+  --accent-soft:      rgba(217, 68, 68, 0.12);
+  --accent-soft-fg:   #f4a0a0;
+  --accent-ring:      rgba(217, 68, 68, 0.28);
 
   --sev-critical:     #fca5a5;
   --sev-critical-bg:  rgba(239, 68, 68, 0.10);

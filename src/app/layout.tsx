@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { IBM_Plex_Sans, IBM_Plex_Mono, IBM_Plex_Serif } from 'next/font/google'
 import { Toaster } from '@/components/ui/sonner'
+import { ThemeProvider } from '@/components/theme-provider'
 import './globals.css'
 
 const ibmPlexSans = IBM_Plex_Sans({
@@ -53,8 +54,10 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
       <body>
-        {children}
-        <Toaster position="bottom-right" richColors />
+        <ThemeProvider>
+          {children}
+          <Toaster position="bottom-right" richColors />
+        </ThemeProvider>
       </body>
     </html>
   )
