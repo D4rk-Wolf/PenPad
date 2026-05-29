@@ -17,7 +17,7 @@ const securityHeaders = [
       "img-src 'self' data: blob:",
       "font-src 'self'",
       // Sentry event ingestion added alongside Supabase realtime WebSockets
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.sentry.io https://*.ingest.sentry.io",
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.sentry.io https://*.ingest.sentry.io https://*.ingest.us.sentry.io",
       // Session Replay builds a Web Worker from a blob: URL
       "worker-src blob:",
       "frame-ancestors 'none'",
