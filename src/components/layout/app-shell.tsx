@@ -65,7 +65,15 @@ export function AppShell({ user, signOut, children }: AppShellProps) {
               {theme === 'dark' ? <Icons.Sun size={14} /> : <Icons.Moon size={14} />}
             </button>
           </div>
-          <form action={signOut} style={{ marginTop: '4px' }}>
+          <a
+            href="mailto:support@penpad.app"
+            className="btn btn-ghost btn-sm"
+            style={{ width: '100%', justifyContent: 'flex-start', color: 'var(--fg-muted)', gap: '8px', textDecoration: 'none', marginTop: '4px' }}
+          >
+            <Icons.HelpCircle size={14} />
+            Get help
+          </a>
+          <form action={signOut} style={{ marginTop: '2px' }}>
             <button type="submit" className="btn btn-ghost btn-sm" style={{ width: '100%', justifyContent: 'flex-start', color: 'var(--fg-muted)', gap: '8px' }}>
               <Icons.Logout size={14} />
               Sign out
