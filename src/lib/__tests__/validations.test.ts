@@ -71,6 +71,42 @@ describe('FindingSchema', () => {
   it('rejects missing title entirely', () => {
     expect(FindingSchema.safeParse({ cvssScore: 5 }).success).toBe(false)
   })
+
+  it('accepts affectedComponent at exactly 500 characters', () => {
+    expect(FindingSchema.safeParse({ ...valid, affectedComponent: 'A'.repeat(500) }).success).toBe(true)
+  })
+
+  it('rejects affectedComponent over 500 characters', () => {
+    expect(FindingSchema.safeParse({ ...valid, affectedComponent: 'A'.repeat(501) }).success).toBe(false)
+  })
+
+  it('accepts recommendation at exactly 10,000 characters', () => {
+    expect(FindingSchema.safeParse({ ...valid, recommendation: 'A'.repeat(10_000) }).success).toBe(true)
+  })
+
+  it('rejects recommendation over 10,000 characters', () => {
+    expect(FindingSchema.safeParse({ ...valid, recommendation: 'A'.repeat(10_001) }).success).toBe(false)
+  })
+
+  it('coerces cvssScore from string "0" to number 0', () => {
+    const result = FindingSchema.safeParse({ ...valid, cvssScore: '0' })
+    expect(result.success).toBe(true)
+    if (result.success) expect(result.data.cvssScore).toBe(0)
+  })
+
+  it('coerces cvssScore from string "10.0" to number 10', () => {
+    const result = FindingSchema.safeParse({ ...valid, cvssScore: '10.0' })
+    expect(result.success).toBe(true)
+    if (result.success) expect(result.data.cvssScore).toBe(10)
+  })
+
+  it('rejects non-numeric cvssScore string', () => {
+    expect(FindingSchema.safeParse({ ...valid, cvssScore: 'critical' }).success).toBe(false)
+  })
+
+  it('accepts all optional fields as undefined', () => {
+    expect(FindingSchema.safeParse({ title: 'Test', cvssScore: 5 }).success).toBe(true)
+  })
 })
 
 // ── ReportSchema ──────────────────────────────────────────────────────────────
@@ -118,6 +154,30 @@ describe('ReportSchema', () => {
   it('rejects scope over 5,000 characters', () => {
     expect(ReportSchema.safeParse({ ...valid, scope: 'A'.repeat(5_001) }).success).toBe(false)
   })
+
+  it('accepts scope at exactly 5,000 characters', () => {
+    expect(ReportSchema.safeParse({ ...valid, scope: 'A'.repeat(5_000) }).success).toBe(true)
+  })
+
+  it('accepts testerName at exactly 200 characters', () => {
+    expect(ReportSchema.safeParse({ ...valid, testerName: 'A'.repeat(200) }).success).toBe(true)
+  })
+
+  it('rejects testerName over 200 characters', () => {
+    expect(ReportSchema.safeParse({ ...valid, testerName: 'A'.repeat(201) }).success).toBe(false)
+  })
+
+  it('rejects empty string for startDate (does not match YYYY-MM-DD)', () => {
+    expect(ReportSchema.safeParse({ ...valid, startDate: '' }).success).toBe(false)
+  })
+
+  it('accepts clientName of exactly 1 character', () => {
+    expect(ReportSchema.safeParse({ clientName: 'X' }).success).toBe(true)
+  })
+
+  it('accepts clientName at exactly 200 characters', () => {
+    expect(ReportSchema.safeParse({ clientName: 'A'.repeat(200) }).success).toBe(true)
+  })
 })
 
 // ── PasswordSchema ────────────────────────────────────────────────────────────
@@ -141,5 +201,28 @@ describe('PasswordSchema', () => {
 
   it('accepts newPassword of exactly 8 characters', () => {
     expect(PasswordSchema.safeParse({ currentPassword: 'old', newPassword: '12345678' }).success).toBe(true)
+  })
+
+  it('rejects newPassword of exactly 7 characters', () => {
+    expect(PasswordSchema.safeParse({ currentPassword: 'old', newPassword: '1234567' }).success).toBe(false)
+  })
+
+  it('accepts very long passwords (1000 chars)', () => {
+    expect(PasswordSchema.safeParse({ currentPassword: 'old', newPassword: 'A'.repeat(1000) }).success).toBe(true)
+  })
+
+  it('rejects missing newPassword field entirely', () => {
+    expect(PasswordSchema.safeParse({ currentPassword: 'old' }).success).toBe(false)
+  })
+
+  it('rejects missing currentPassword field entirely', () => {
+    expect(PasswordSchema.safeParse({ newPassword: 'newpassword' }).success).toBe(false)
+  })
+
+  it('accepts passwords with special characters', () => {
+    expect(PasswordSchema.safeParse({
+      currentPassword: 'p@$$w0rd!',
+      newPassword: 'N3w-P@$$w0rd!',
+    }).success).toBe(true)
   })
 })
