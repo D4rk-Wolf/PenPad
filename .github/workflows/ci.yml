@@ -11,9 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  PNPM_VERSION: '9'
-  # GitHub Actions drops Node 20 for actions on 2026-06-02; opt in now.
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+  PNPM_VERSION: '11'
 
 jobs:
   # ── 1. Secret scanning — cheapest gate, runs first ──────────────────────────
