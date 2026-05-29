@@ -11,7 +11,9 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  PNPM_VERSION: '11'
+  PNPM_VERSION: '9'
+  # GitHub Actions drops Node 20 for actions on 2026-06-02; opt in now.
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
 jobs:
   # ── 1. Secret scanning — cheapest gate, runs first ──────────────────────────
@@ -22,9 +24,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install gitleaks
+        run: |
+          curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.27.2/gitleaks_8.27.2_linux_x64.tar.gz \
+            | tar -xz gitleaks
+          sudo mv gitleaks /usr/local/bin/
+      - name: Run gitleaks
+        run: gitleaks detect --source=. --exit-code=1
 
   # ── 2. Dependency audit ─────────────────────────────────────────────────────
   audit:
@@ -75,6 +81,15 @@ jobs:
           NEXT_PUBLIC_SENTRY_DSN: ${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}
 
   # ── 4. Run DB migrations before any production deploy ───────────────────────
+  #
+  # Uses the Supabase Management API (HTTPS) rather than a direct Postgres
+  # connection. The direct host (db.*.supabase.co) is IPv6-only; the pooler
+  # returns "Tenant not found" for this project. The Management API works from
+  # any network and only requires SUPABASE_ACCESS_TOKEN.
+  #
+  # To generate SUPABASE_ACCESS_TOKEN:
+  #   https://supabase.com/dashboard/account/tokens
+  # Add it as a GitHub Actions secret named SUPABASE_ACCESS_TOKEN.
   migrate:
     name: DB Migrations
     runs-on: ubuntu-latest
@@ -82,20 +97,56 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - name: Apply migrations
-        run: pnpm db:migrate
+      - name: Apply pending migrations via Supabase API
         env:
-          # Use the direct (non-pooled) connection for migrations — not the pooler URL.
-          # Drizzle uses advisory locks which require a persistent connection.
-          DATABASE_URL: ${{ secrets.DATABASE_URL_DIRECT }}
+          PROJECT_REF: vtdmtnpsybqmcgtdvblu
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          API="https://api.supabase.com/v1/projects/${PROJECT_REF}/database/query"
+
+          # Execute SQL via the Supabase Management API (no direct DB connection needed)
+          run_sql() {
+            local sql="$1"
+            local result
+            result=$(curl -sf -X POST "$API" \
+              -H "Authorization: Bearer ${SUPABASE_ACCESS_TOKEN}" \
+              -H "Content-Type: application/json" \
+              -d "$(python3 -c "import json,sys; print(json.dumps({'query': sys.argv[1]}))" "$sql")")
+            echo "$result"
+          }
+
+          # Ensure the migration tracking table exists
+          run_sql "CREATE SCHEMA IF NOT EXISTS supabase_migrations;
+          CREATE TABLE IF NOT EXISTS supabase_migrations.schema_migrations (
+            version  text PRIMARY KEY,
+            name     text,
+            statements text[]
+          );" > /dev/null
+
+          # Get already-applied versions
+          APPLIED=$(run_sql "SELECT version FROM supabase_migrations.schema_migrations ORDER BY version" \
+            | python3 -c "import json,sys; print('\n'.join(r['version'] for r in json.load(sys.stdin)))" 2>/dev/null || echo "")
+
+          # Apply each migration file in version order
+          for f in $(ls supabase/migrations/*.sql | sort); do
+            VERSION=$(basename "$f" | cut -d'_' -f1)
+            NAME=$(basename "$f" .sql | sed "s/^${VERSION}_//")
+
+            if echo "$APPLIED" | grep -qx "$VERSION"; then
+              echo "✓  $VERSION ($NAME) — already applied"
+            else
+              echo "→  Applying $VERSION ($NAME)..."
+              SQL=$(cat "$f")
+              run_sql "$SQL" > /dev/null
+              # Record the migration
+              run_sql "INSERT INTO supabase_migrations.schema_migrations (version, name) VALUES ('${VERSION}', '${NAME}') ON CONFLICT (version) DO NOTHING;" > /dev/null
+              echo "✓  $VERSION applied"
+            fi
+          done
+
+          echo "Migration step complete."
 
   # ── 5. Deploy to production (main only, after migrations) ───────────────────
   deploy-production:
