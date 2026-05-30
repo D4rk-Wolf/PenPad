@@ -1,9 +1,11 @@
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getMySubscription } from '@/lib/subscriptions'
+import { createCheckoutSession, createCustomerPortalSession } from '@/lib/stripe'
 
 export const dynamic = 'force-dynamic'
-import { createCheckoutSession, createCustomerPortalSession } from '@/lib/stripe'
+export const metadata: Metadata = { robots: { index: false, follow: false } }
 import { updateProfile, updatePassword, deleteAccount } from '@/app/actions/settings'
 import { getBranding, updateBranding } from '@/app/actions/branding'
 import { Icons } from '@/components/penpad/icons'

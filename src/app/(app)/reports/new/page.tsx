@@ -1,6 +1,9 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ReportForm } from '@/components/reports/report-form'
 import { Icons } from '@/components/penpad/icons'
+
+export const metadata: Metadata = { robots: { index: false, follow: false } }
 
 export default function NewReportPage() {
   return (

@@ -1,9 +1,12 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { adminDb, camel } from '@/lib/supabase/admin'
 import type { Report } from '@/lib/db/schema'
 import { getFindings } from '@/app/actions/findings'
+
+export const metadata: Metadata = { robots: { index: false, follow: false } }
 import { getMySubscription } from '@/lib/subscriptions'
 import { getMyTemplates } from '@/app/actions/templates'
 

@@ -3,8 +3,10 @@ import { getReports } from '@/app/actions/reports'
 import { Icons } from '@/components/penpad/icons'
 import { StatusPill } from '@/components/penpad/ui'
 
-// User-specific data — always render fresh, never serve a cached response
+import type { Metadata } from 'next'
+
 export const dynamic = 'force-dynamic'
+export const metadata: Metadata = { robots: { index: false, follow: false } }
 
 export default async function DashboardPage() {
   const reportList = await getReports()

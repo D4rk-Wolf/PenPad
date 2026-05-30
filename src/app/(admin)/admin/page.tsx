@@ -1,7 +1,9 @@
+import type { Metadata } from 'next'
 import { getAnalyticsData } from '@/app/actions/admin'
 import { SignupChart } from './charts'
 
 export const dynamic = 'force-dynamic'
+export const metadata: Metadata = { robots: { index: false, follow: false } }
 
 function fmt(n: number) {
   return n.toLocaleString('en-GB')

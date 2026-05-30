@@ -1,7 +1,11 @@
 import Link from 'next/link'
 import { BrandMark } from '@/components/penpad/brand-mark'
 
-export const metadata = { title: 'Terms of Service — PenPad' }
+export const metadata = {
+  title: 'Terms of Service',
+  description: 'Terms governing your use of PenPad.',
+  alternates: { canonical: '/terms' },
+}
 
 export default function TermsPage() {
   const updated = '26 May 2026'
