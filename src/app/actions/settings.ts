@@ -97,6 +97,7 @@ export async function deleteAccount(formData: FormData) {
     adminDb().from('finding_templates').delete().eq('user_id', user.id),
     adminDb().from('reports').delete().eq('user_id', user.id),
     adminDb().from('subscriptions').delete().eq('user_id', user.id),
+    adminDb().from('user_branding').delete().eq('user_id', user.id),
   ])
 
   // 4. Delete the auth record — invalidates all active sessions and tokens
