@@ -4,9 +4,8 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { adminDb, camel } from '@/lib/supabase/admin'
-import { getMySubscription } from '@/lib/subscriptions'
 import { ReportSchema } from '@/lib/validations'
-import type { Report, Subscription } from '@/lib/db/schema'
+import type { Report } from '@/lib/db/schema'
 import { FREE_REPORT_LIMIT } from '@/lib/utils'
 
 async function getCurrentUserId(): Promise<string> {
@@ -146,12 +145,3 @@ export async function deleteReport(reportId: string) {
   redirect('/dashboard')
 }
 
-/**
- * @deprecated Use `getMySubscription()` from `@/lib/subscriptions` directly.
- * This shim exists to avoid breaking callers while migration happens.
- * It ignores the userId param and always resolves the calling user's own subscription.
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function getSubscription(userId?: string): Promise<Subscription | null> {
-  return getMySubscription()
-}
