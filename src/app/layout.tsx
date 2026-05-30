@@ -26,10 +26,47 @@ const ibmPlexSerif = IBM_Plex_Serif({
   display: 'swap',
 })
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://pen-pad.vercel.app'
+
 export const metadata: Metadata = {
-  title: 'PenPad — pen test reports for security professionals',
+  metadataBase: new URL(APP_URL),
+  title: {
+    default: 'PenPad — Penetration Testing Report Software',
+    template: '%s | PenPad',
+  },
   description:
-    'The reporting workbench for working penetration testers. Log findings, score with CVSS v3.1, and ship client-ready PDF reports.',
+    'The penetration testing report tool built for working pentesters. Log findings, auto-score with CVSS v3.1, and export client-ready PDF reports. Free to start.',
+  keywords: [
+    'penetration testing report',
+    'pentest report tool',
+    'pentest report software',
+    'pentest report template',
+    'CVSS scoring tool',
+    'vulnerability report software',
+    'security assessment report',
+    'pentest PDF export',
+    'penetration testing software',
+  ],
+  authors: [{ name: 'D4rkWolf Studios', url: 'https://d4rkwolf.co.uk' }],
+  creator: 'D4rkWolf Studios',
+  publisher: 'D4rkWolf Studios',
+  openGraph: {
+    type: 'website',
+    siteName: 'PenPad',
+    title: 'PenPad — Penetration Testing Report Software',
+    description:
+      'Log findings, score with CVSS v3.1, and ship client-ready PDF reports. The report tool built for working penetration testers.',
+    url: '/',
+    images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'PenPad — Penetration Testing Report Software' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'PenPad — Penetration Testing Report Software',
+    description:
+      'Log findings, score with CVSS v3.1, and ship client-ready PDF reports. Built for working penetration testers.',
+    images: ['/opengraph-image'],
+  },
+  robots: { index: true, follow: true },
 }
 
 // Static compile-time constant — never derived from user input, safe for

@@ -1,8 +1,11 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getMyTemplates } from '@/app/actions/templates'
 import { getMySubscription } from '@/lib/subscriptions'
+
+export const metadata: Metadata = { robots: { index: false, follow: false } }
 import { TemplateList } from '@/components/templates/template-list'
 import { Icons } from '@/components/penpad/icons'
 

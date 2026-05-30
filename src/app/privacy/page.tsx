@@ -1,7 +1,11 @@
 import Link from 'next/link'
 import { BrandMark } from '@/components/penpad/brand-mark'
 
-export const metadata = { title: 'Privacy Policy — PenPad' }
+export const metadata = {
+  title: 'Privacy Policy',
+  description: 'How PenPad collects, uses, and protects your data.',
+  alternates: { canonical: '/privacy' },
+}
 
 export default function PrivacyPage() {
   const updated = '26 May 2026'

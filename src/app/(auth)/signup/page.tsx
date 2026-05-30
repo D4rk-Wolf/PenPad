@@ -4,6 +4,7 @@ import { AuthForm } from '@/components/auth/auth-form'
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
+  title: 'Create a Free Account',
   robots: { index: false, follow: false },
 }
 

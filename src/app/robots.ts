@@ -9,7 +9,7 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: '*',
         allow: '/',
         // Keep all authenticated app routes and API private
-        disallow: ['/dashboard', '/reports', '/settings', '/templates', '/api/'],
+        disallow: ['/dashboard', '/reports', '/settings', '/templates', '/api/', '/admin'],
       },
     ],
     sitemap: `${base}/sitemap.xml`,

@@ -1,6 +1,49 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { BrandMark } from '@/components/penpad/brand-mark'
 import { Icons } from '@/components/penpad/icons'
+
+export const metadata: Metadata = {
+  title: 'PenPad — Penetration Testing Report Software',
+  description:
+    'Replace Word docs with a purpose-built penetration testing report tool. Log findings, auto-score with CVSS v3.1, and generate polished PDF reports. Free to start.',
+  openGraph: {
+    title: 'PenPad — Penetration Testing Report Software',
+    description:
+      'Replace Word docs with a purpose-built penetration testing report tool. Log findings, auto-score with CVSS v3.1, and generate polished PDF reports.',
+    url: '/',
+  },
+  alternates: { canonical: '/' },
+}
+
+const softwareSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'PenPad',
+  applicationCategory: 'SecurityApplication',
+  operatingSystem: 'Web',
+  description:
+    'Penetration testing report software for security professionals. Log findings, score with CVSS v3.1, and export client-ready PDF reports.',
+  url: process.env.NEXT_PUBLIC_APP_URL ?? 'https://pen-pad.vercel.app',
+  offers: [
+    { '@type': 'Offer', name: 'Free', price: '0', priceCurrency: 'GBP' },
+    { '@type': 'Offer', name: 'Pro', price: '49', priceCurrency: 'GBP', billingDuration: 'P1M' },
+  ],
+  provider: {
+    '@type': 'Organization',
+    name: 'D4rkWolf Studios',
+    url: 'https://d4rkwolf.co.uk',
+  },
+}
+
+const orgSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'D4rkWolf Studios',
+  url: process.env.NEXT_PUBLIC_APP_URL ?? 'https://pen-pad.vercel.app',
+  logo: `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://pen-pad.vercel.app'}/icon.svg`,
+  contactPoint: { '@type': 'ContactPoint', email: 'security@d4rkwolf.co.uk' },
+}
 
 export default function LandingPage() {
   return (
@@ -168,6 +211,10 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* JSON-LD — < escaped to < so </script> can never break out of the tag */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema).replace(/</g, '\\u003c') }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema).replace(/</g, '\\u003c') }} />
 
       {/* Footer */}
       <footer className="landing-footer">
