@@ -26,7 +26,7 @@ const ibmPlexSerif = IBM_Plex_Serif({
   display: 'swap',
 })
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://pen-pad.vercel.app'
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://penpad.co.uk'
 
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),

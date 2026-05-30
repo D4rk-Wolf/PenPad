@@ -86,7 +86,7 @@ export default function OgImage() {
         >
           Start for free
         </div>
-        <span style={{ color: '#504e49', fontSize: '16px' }}>pen-pad.vercel.app</span>
+        <span style={{ color: '#504e49', fontSize: '16px' }}>penpad.co.uk</span>
       </div>
     </div>,
     size
