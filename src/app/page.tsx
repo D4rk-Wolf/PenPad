@@ -24,7 +24,7 @@ const softwareSchema = {
   operatingSystem: 'Web',
   description:
     'Penetration testing report software for security professionals. Log findings, score with CVSS v3.1, and export client-ready PDF reports.',
-  url: process.env.NEXT_PUBLIC_APP_URL ?? 'https://pen-pad.vercel.app',
+  url: process.env.NEXT_PUBLIC_APP_URL ?? 'https://penpad.co.uk',
   offers: [
     { '@type': 'Offer', name: 'Free', price: '0', priceCurrency: 'GBP' },
     { '@type': 'Offer', name: 'Pro', price: '49', priceCurrency: 'GBP', billingDuration: 'P1M' },
@@ -40,8 +40,8 @@ const orgSchema = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
   name: 'D4rkWolf Studios',
-  url: process.env.NEXT_PUBLIC_APP_URL ?? 'https://pen-pad.vercel.app',
-  logo: `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://pen-pad.vercel.app'}/icon.svg`,
+  url: process.env.NEXT_PUBLIC_APP_URL ?? 'https://penpad.co.uk',
+  logo: `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://penpad.co.uk'}/icon.svg`,
   contactPoint: { '@type': 'ContactPoint', email: 'security@d4rkwolf.co.uk' },
 }
 
