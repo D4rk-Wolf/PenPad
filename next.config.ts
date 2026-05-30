@@ -16,8 +16,8 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline'",    // required for CSS-in-JS / inline styles
       "img-src 'self' data: blob:",
       "font-src 'self'",
-      // Sentry event ingestion added alongside Supabase realtime WebSockets
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.sentry.io https://*.ingest.sentry.io https://*.ingest.us.sentry.io",
+      // Supabase realtime WebSockets — Sentry events go via /monitoring tunnel (same origin)
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
       // Session Replay builds a Web Worker from a blob: URL
       "worker-src blob:",
       "frame-ancestors 'none'",
@@ -58,7 +58,6 @@ export default withSentryConfig(nextConfig, {
 
   // Upload source maps to Sentry for readable production stack traces.
   // Requires SENTRY_AUTH_TOKEN in the build environment.
-  // Generate a token at: https://d4rkwolf-o6.sentry.io/settings/auth-tokens/
   sourcemaps: {
     deleteSourcemapsAfterUpload: true,
   },
@@ -66,6 +65,8 @@ export default withSentryConfig(nextConfig, {
   // Tree-shake Sentry debug code from production bundles
   disableLogger: true,
 
-  // Automatically instrument Next.js server components and API routes
-  autoInstrumentServerFunctions: true,
+  // Proxy Sentry events through /monitoring on this domain instead of sending
+  // directly to ingest.us.sentry.io — bypasses browser privacy tools that
+  // block known tracking domains (uBlock, Firefox ETP, Safari ITP).
+  tunnelRoute: "/monitoring",
 });
