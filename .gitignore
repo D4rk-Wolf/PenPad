@@ -30,6 +30,9 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# private planning docs
+USER_ACQUISITION.md
+
 # env files (can opt-in for committing if needed)
 .env*
 # ...but always commit the template so contributors know what vars are needed
