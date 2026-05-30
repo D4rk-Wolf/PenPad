@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { IBM_Plex_Sans, IBM_Plex_Mono, IBM_Plex_Serif } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Toaster } from '@/components/ui/sonner'
 import { ThemeProvider } from '@/components/theme-provider'
 import './globals.css'
@@ -97,6 +98,7 @@ export default function RootLayout({
           {children}
           <Toaster position="bottom-right" richColors />
           <Analytics />
+          <SpeedInsights />
         </ThemeProvider>
       </body>
     </html>
