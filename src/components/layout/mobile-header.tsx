@@ -1,7 +1,8 @@
 'use client'
 
-import { Menu } from 'lucide-react'
+import Link from 'next/link'
 import { BrandMark } from '@/components/penpad/brand-mark'
+import { Icons } from '@/components/penpad/icons'
 
 interface MobileHeaderProps {
   onMenuClick: () => void
@@ -9,21 +10,21 @@ interface MobileHeaderProps {
 
 export function MobileHeader({ onMenuClick }: MobileHeaderProps) {
   return (
-    <header className="md:hidden flex items-center justify-between px-4 h-12 bg-background border-b border-border shrink-0">
+    <div className="mobile-topbar">
       <button
+        className="btn btn-ghost btn-icon"
         onClick={onMenuClick}
-        className="text-muted-foreground hover:text-foreground"
-        aria-label="Open menu"
+        aria-label="Open navigation"
       >
-        <Menu className="w-5 h-5" />
+        <Icons.Menu size={18} />
       </button>
-      <div className="flex items-center gap-2">
+      <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', color: 'inherit', flex: 1, justifyContent: 'center' }}>
         <BrandMark size={20} />
-        <span className="text-sm font-bold tracking-tight">
+        <span style={{ fontWeight: 600, fontSize: '14px', letterSpacing: '-0.01em' }}>
           <span style={{ color: 'var(--accent)' }}>Pen</span>Pad
         </span>
-      </div>
-      <div className="w-5" />
-    </header>
+      </Link>
+      <div style={{ width: 32 }} />
+    </div>
   )
 }

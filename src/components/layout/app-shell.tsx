@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { BrandMark } from '@/components/penpad/brand-mark'
@@ -21,18 +22,20 @@ const NAV_ITEMS = [
 export function AppShell({ user, signOut, children }: AppShellProps) {
   const pathname = usePathname()
   const { theme, toggleTheme } = useTheme()
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const initials = user.name
     ? user.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
     : user.email.slice(0, 2).toUpperCase()
 
   const displayName = user.name ?? user.email
+  const close = () => setSidebarOpen(false)
 
   return (
     <div className="app-root">
-      <nav className="sidebar">
+      <nav className={`sidebar${sidebarOpen ? ' sidebar--open' : ''}`}>
         <div className="sidebar-brand">
-          <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', color: 'inherit' }}>
+          <Link href="/dashboard" onClick={close} style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', color: 'inherit' }}>
             <BrandMark size={22} />
             <span className="sidebar-brand-name">
               <span style={{ color: 'var(--accent)' }}>Pen</span>Pad
@@ -44,7 +47,7 @@ export function AppShell({ user, signOut, children }: AppShellProps) {
           {NAV_ITEMS.map(({ href, label, Icon }) => {
             const active = pathname === href || pathname.startsWith(href + '/')
             return (
-              <Link key={href} href={href} className={`nav-item${active ? ' active' : ''}`}>
+              <Link key={href} href={href} onClick={close} className={`nav-item${active ? ' active' : ''}`}>
                 <Icon size={16} />
                 {label}
               </Link>
@@ -82,7 +85,28 @@ export function AppShell({ user, signOut, children }: AppShellProps) {
         </div>
       </nav>
 
+      {sidebarOpen && (
+        <div className="sidebar-overlay" onClick={close} aria-hidden="true" />
+      )}
+
       <div className="main-pane">
+        <div className="mobile-topbar">
+          <button
+            className="btn btn-ghost btn-icon"
+            onClick={() => setSidebarOpen(true)}
+            aria-label="Open navigation"
+          >
+            <Icons.Menu size={18} />
+          </button>
+          <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', color: 'inherit', flex: 1, justifyContent: 'center' }}>
+            <BrandMark size={20} />
+            <span style={{ fontWeight: 600, fontSize: '14px', letterSpacing: '-0.01em' }}>
+              <span style={{ color: 'var(--accent)' }}>Pen</span>Pad
+            </span>
+          </Link>
+          <div style={{ width: 32 }} />
+        </div>
+
         {children}
       </div>
     </div>
