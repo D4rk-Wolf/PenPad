@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import { eq, and } from 'drizzle-orm'
 import { createClient } from '@/lib/supabase/server'
-import { adminDb, camel } from '@/lib/supabase/admin'
-import type { Report } from '@/lib/db/schema'
+import { db } from '@/lib/db'
+import { reports } from '@/lib/db/schema'
 import { getFindings } from '@/app/actions/findings'
 
 export const metadata: Metadata = { robots: { index: false, follow: false } }
@@ -25,14 +26,12 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) notFound()
 
-  const { data: reportRow } = await adminDb()
-    .from('reports')
-    .select('*')
-    .eq('id', id)
-    .eq('user_id', user.id)
-    .maybeSingle()
-  if (!reportRow) notFound()
-  const report = camel<Report>(reportRow as Record<string, unknown>)
+  const [report] = await db
+    .select()
+    .from(reports)
+    .where(and(eq(reports.id, id), eq(reports.userId, user.id)))
+    .limit(1)
+  if (!report) notFound()
 
   const [findingList, sub, myTemplates] = await Promise.all([
     getFindings(id),
