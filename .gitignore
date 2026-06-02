@@ -46,3 +46,6 @@ OUTREACH_COPY.md
 *.tsbuildinfo
 next-env.d.ts
 .env.local
+
+# git worktrees
+.worktrees/
