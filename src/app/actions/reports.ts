@@ -2,8 +2,10 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { eq, desc, count, and } from 'drizzle-orm'
 import { createClient } from '@/lib/supabase/server'
-import { adminDb, camel } from '@/lib/supabase/admin'
+import { db } from '@/lib/db'
+import { reports, subscriptions } from '@/lib/db/schema'
 import { ReportSchema } from '@/lib/validations'
 import type { Report } from '@/lib/db/schema'
 import { FREE_REPORT_LIMIT } from '@/lib/utils'
@@ -17,36 +19,23 @@ async function getCurrentUserId(): Promise<string> {
 
 export async function getReports(): Promise<Report[]> {
   const userId = await getCurrentUserId()
-  const { data, error } = await adminDb()
-    .from('reports')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false })
+  return db
+    .select()
+    .from(reports)
+    .where(eq(reports.userId, userId))
+    .orderBy(desc(reports.createdAt))
     .limit(100)
-  if (error) throw new Error(error.message)
-  return (data ?? []).map(r => camel<Report>(r as Record<string, unknown>))
 }
 
 export async function createReport(formData: FormData) {
   const userId = await getCurrentUserId()
 
-  // Use count query instead of fetching all row IDs (Perf H3)
-  const [{ count: reportCount, error: e1 }, subResult] = await Promise.all([
-    adminDb()
-      .from('reports')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId),
-    adminDb()
-      .from('subscriptions')
-      .select('status')
-      .eq('user_id', userId)
-      .limit(1),
+  const [countResult, subResult] = await Promise.all([
+    db.select({ value: count() }).from(reports).where(eq(reports.userId, userId)),
+    db.select({ status: subscriptions.status }).from(subscriptions).where(eq(subscriptions.userId, userId)).limit(1),
   ])
-  if (e1) throw new Error(e1.message)
-
-  const isPro = subResult.data?.[0]?.status === 'active'
-
-  if (!isPro && (reportCount ?? 0) >= FREE_REPORT_LIMIT) {
+  const isPro = subResult[0]?.status === 'active'
+  if (!isPro && (countResult[0]?.value ?? 0) >= FREE_REPORT_LIMIT) {
     throw new Error(`Free tier limited to ${FREE_REPORT_LIMIT} reports. Upgrade to Pro for unlimited.`)
   }
 
@@ -57,25 +46,20 @@ export async function createReport(formData: FormData) {
     endDate:    formData.get('endDate') || null,
     testerName: formData.get('testerName') || null,
   })
-  if (!parsed.success) {
-    throw new Error(parsed.error.issues.map(i => i.message).join('; '))
-  }
+  if (!parsed.success) throw new Error(parsed.error.issues.map(i => i.message).join('; '))
   const d = parsed.data
 
-  const { data, error } = await adminDb()
-    .from('reports')
-    .insert({
-      user_id:     userId,
-      client_name: d.clientName,
-      scope:       d.scope ?? null,
-      start_date:  d.startDate ?? null,
-      end_date:    d.endDate ?? null,
-      tester_name: d.testerName ?? null,
+  const [report] = await db
+    .insert(reports)
+    .values({
+      userId,
+      clientName: d.clientName,
+      scope:      d.scope ?? null,
+      startDate:  d.startDate ?? null,
+      endDate:    d.endDate ?? null,
+      testerName: d.testerName ?? null,
     })
-    .select()
-    .single()
-  if (error) throw new Error(error.message)
-  const report = camel<Report>(data as Record<string, unknown>)
+    .returning()
 
   revalidatePath('/dashboard')
   redirect(`/reports/${report.id}`)
@@ -91,23 +75,20 @@ export async function updateReport(reportId: string, formData: FormData) {
     endDate:    formData.get('endDate') || null,
     testerName: formData.get('testerName') || null,
   })
-  if (!parsed.success) {
-    throw new Error(parsed.error.issues.map(i => i.message).join('; '))
-  }
+  if (!parsed.success) throw new Error(parsed.error.issues.map(i => i.message).join('; '))
   const d = parsed.data
 
-  const { error } = await adminDb()
-    .from('reports')
-    .update({
-      client_name: d.clientName,
-      scope:       d.scope ?? null,
-      start_date:  d.startDate ?? null,
-      end_date:    d.endDate ?? null,
-      tester_name: d.testerName ?? null,
+  await db
+    .update(reports)
+    .set({
+      clientName: d.clientName,
+      scope:      d.scope ?? null,
+      startDate:  d.startDate ?? null,
+      endDate:    d.endDate ?? null,
+      testerName: d.testerName ?? null,
     })
-    .eq('id', reportId)
-    .eq('user_id', userId)
-  if (error) throw new Error(error.message)
+    .where(and(eq(reports.id, reportId), eq(reports.userId, userId)))
+
   revalidatePath(`/reports/${reportId}`)
   revalidatePath('/dashboard')
 }
@@ -118,16 +99,14 @@ export async function updateReportStatus(
 ) {
   const userId = await getCurrentUserId()
 
-  if (!['draft', 'active', 'final'].includes(status)) {
+  if (!(['draft', 'active', 'final'] as const).includes(status)) {
     throw new Error('Invalid status')
   }
 
-  const { error } = await adminDb()
-    .from('reports')
-    .update({ status })
-    .eq('id', reportId)
-    .eq('user_id', userId)
-  if (error) throw new Error(error.message)
+  await db
+    .update(reports)
+    .set({ status })
+    .where(and(eq(reports.id, reportId), eq(reports.userId, userId)))
 
   revalidatePath(`/reports/${reportId}`)
   revalidatePath('/dashboard')
@@ -135,13 +114,9 @@ export async function updateReportStatus(
 
 export async function deleteReport(reportId: string) {
   const userId = await getCurrentUserId()
-  const { error } = await adminDb()
-    .from('reports')
-    .delete()
-    .eq('id', reportId)
-    .eq('user_id', userId)
-  if (error) throw new Error(error.message)
+  await db
+    .delete(reports)
+    .where(and(eq(reports.id, reportId), eq(reports.userId, userId)))
   revalidatePath('/dashboard')
   redirect('/dashboard')
 }
-
