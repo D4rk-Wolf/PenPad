@@ -2,8 +2,11 @@
 
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
+import { eq, inArray } from 'drizzle-orm'
 import { createClient } from '@/lib/supabase/server'
 import { adminDb } from '@/lib/supabase/admin'
+import { db } from '@/lib/db'
+import { reports, findings, findingTemplates, subscriptions, userBranding } from '@/lib/db/schema'
 import { getStripeInstance } from '@/lib/stripe'
 import { PasswordSchema } from '@/lib/validations'
 
@@ -62,18 +65,21 @@ export async function deleteAccount(formData: FormData) {
   if (confirmation !== 'delete my account') redirect('/settings?error=delete-confirm#danger')
 
   // 1. Read subscription before any destructive operations
-  const { data: subRow } = await adminDb()
-    .from('subscriptions')
-    .select('stripe_subscription_id, status')
-    .eq('user_id', user.id)
-    .maybeSingle()
+  const [subRow] = await db
+    .select({
+      stripeSubscriptionId: subscriptions.stripeSubscriptionId,
+      status:               subscriptions.status,
+    })
+    .from(subscriptions)
+    .where(eq(subscriptions.userId, user.id))
+    .limit(1)
 
   // 2. Cancel active Stripe subscription — fail-closed:
   //    abort the whole deletion if Stripe cancellation fails to avoid
   //    the user being charged after their account no longer exists.
-  if (subRow?.stripe_subscription_id && subRow.status === 'active') {
+  if (subRow?.stripeSubscriptionId && subRow.status === 'active') {
     try {
-      await getStripeInstance().subscriptions.cancel(subRow.stripe_subscription_id)
+      await getStripeInstance().subscriptions.cancel(subRow.stripeSubscriptionId)
     } catch (e) {
       console.error('[deleteAccount] Stripe cancel failed — aborting deletion:', e)
       redirect('/settings?error=delete-billing#danger')
@@ -81,26 +87,27 @@ export async function deleteAccount(formData: FormData) {
   }
 
   // 3. Delete data in dependency order (findings first, then parent rows)
-  const { data: reportIds } = await adminDb()
-    .from('reports')
-    .select('id')
-    .eq('user_id', user.id)
+  const reportIds = await db
+    .select({ id: reports.id })
+    .from(reports)
+    .where(eq(reports.userId, user.id))
 
-  if (reportIds?.length) {
-    await adminDb()
-      .from('findings')
-      .delete()
-      .in('report_id', reportIds.map(r => r.id))
+  if (reportIds.length) {
+    await db
+      .delete(findings)
+      .where(inArray(findings.reportId, reportIds.map(r => r.id)))
   }
 
   await Promise.all([
-    adminDb().from('finding_templates').delete().eq('user_id', user.id),
-    adminDb().from('reports').delete().eq('user_id', user.id),
-    adminDb().from('subscriptions').delete().eq('user_id', user.id),
-    adminDb().from('user_branding').delete().eq('user_id', user.id),
+    db.delete(findingTemplates).where(eq(findingTemplates.userId, user.id)),
+    db.delete(reports).where(eq(reports.userId, user.id)),
+    db.delete(subscriptions).where(eq(subscriptions.userId, user.id)),
+    db.delete(userBranding).where(eq(userBranding.userId, user.id)),
   ])
 
-  // 4. Delete the auth record — invalidates all active sessions and tokens
+  // 4. Delete the auth record — invalidates all active sessions and tokens.
+  //    Auth still lives in Supabase until Phase 2 (better-auth), so this
+  //    remains a Supabase admin operation with no Drizzle equivalent.
   const { error: deleteErr } = await adminDb().auth.admin.deleteUser(user.id)
   if (deleteErr) {
     console.error('[deleteAccount] auth.admin.deleteUser failed:', deleteErr)
