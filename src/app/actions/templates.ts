@@ -65,8 +65,10 @@ export async function saveTemplate(findingId: string) {
 
 export async function deleteTemplate(templateId: string) {
   const user = await getCurrentUser()
-  await db
+  const deleted = await db
     .delete(findingTemplates)
     .where(and(eq(findingTemplates.id, templateId), eq(findingTemplates.userId, user.id)))
+    .returning({ id: findingTemplates.id })
+  if (deleted.length === 0) throw new Error('Template not found or access denied')
   revalidatePath('/templates')
 }
