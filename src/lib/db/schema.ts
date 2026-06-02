@@ -58,6 +58,11 @@ export const userBranding = pgTable('user_branding', {
   updatedAt:    timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 })
 
+export const stripeEventsProcessed = pgTable('stripe_events_processed', {
+  eventId:     text('event_id').primaryKey(),
+  processedAt: timestamp('processed_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
 export type Report             = typeof reports.$inferSelect
 export type NewReport          = typeof reports.$inferInsert
 export type Finding            = typeof findings.$inferSelect
@@ -66,3 +71,4 @@ export type Subscription       = typeof subscriptions.$inferSelect
 export type FindingTemplate    = typeof findingTemplates.$inferSelect
 export type NewFindingTemplate = typeof findingTemplates.$inferInsert
 export type UserBranding       = typeof userBranding.$inferSelect
+export type StripeEventProcessed = typeof stripeEventsProcessed.$inferSelect
