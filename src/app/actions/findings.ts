@@ -58,7 +58,7 @@ export async function createFinding(reportId: string, formData: FormData) {
     throw new Error(`Free tier limited to ${FREE_FINDING_LIMIT} findings per report. Upgrade to Pro for unlimited.`)
   }
 
-  const cvssScore = parseFloat(d.cvssScore.toFixed(1)).toString()
+  const cvssScore = d.cvssScore.toFixed(1)
   await db.insert(findings).values({
     reportId,
     title:             d.title,
@@ -88,7 +88,7 @@ export async function updateFinding(findingId: string, reportId: string, formDat
   if (!parsed.success) throw new Error(parsed.error.issues.map(i => i.message).join('; '))
   const d = parsed.data
 
-  const cvssScore = parseFloat(d.cvssScore.toFixed(1)).toString()
+  const cvssScore = d.cvssScore.toFixed(1)
   await db
     .update(findings)
     .set({
