@@ -72,3 +72,5 @@ export type FindingTemplate    = typeof findingTemplates.$inferSelect
 export type NewFindingTemplate = typeof findingTemplates.$inferInsert
 export type UserBranding       = typeof userBranding.$inferSelect
 export type StripeEventProcessed = typeof stripeEventsProcessed.$inferSelect
+
+export * from './auth-schema'
