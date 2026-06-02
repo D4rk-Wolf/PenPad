@@ -93,19 +93,18 @@ export async function updateReport(reportId: string, formData: FormData) {
   revalidatePath('/dashboard')
 }
 
-export async function updateReportStatus(
-  reportId: string,
-  status: 'draft' | 'active' | 'final',
-) {
+export async function updateReportStatus(reportId: string, status: string) {
   const userId = await getCurrentUserId()
 
-  if (!(['draft', 'active', 'final'] as const).includes(status)) {
+  const VALID_STATUSES = ['draft', 'active', 'final'] as const
+  type Status = typeof VALID_STATUSES[number]
+  if (!(VALID_STATUSES as readonly string[]).includes(status)) {
     throw new Error('Invalid status')
   }
 
   await db
     .update(reports)
-    .set({ status })
+    .set({ status: status as Status })
     .where(and(eq(reports.id, reportId), eq(reports.userId, userId)))
 
   revalidatePath(`/reports/${reportId}`)
