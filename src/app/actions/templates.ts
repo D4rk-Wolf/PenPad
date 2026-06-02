@@ -1,69 +1,72 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { eq, desc, and } from 'drizzle-orm'
 import { createClient } from '@/lib/supabase/server'
-import { adminDb, camel } from '@/lib/supabase/admin'
+import { db } from '@/lib/db'
+import { findings, findingTemplates, reports } from '@/lib/db/schema'
 import { getMySubscription } from '@/lib/subscriptions'
-import type { FindingTemplate, Finding } from '@/lib/db/schema'
+import type { FindingTemplate } from '@/lib/db/schema'
 
-export async function getMyTemplates(): Promise<FindingTemplate[]> {
+async function getCurrentUser() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Unauthenticated')
+  return user
+}
 
-  const { data, error } = await adminDb()
-    .from('finding_templates')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
-  if (error) throw new Error(error.message)
-  return (data ?? []).map(r => camel<FindingTemplate>(r as Record<string, unknown>))
+export async function getMyTemplates(): Promise<FindingTemplate[]> {
+  const user = await getCurrentUser()
+  return db
+    .select()
+    .from(findingTemplates)
+    .where(eq(findingTemplates.userId, user.id))
+    .orderBy(desc(findingTemplates.createdAt))
 }
 
 export async function saveTemplate(findingId: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthenticated')
+  const user = await getCurrentUser()
 
   const sub = await getMySubscription()
   if (sub?.status !== 'active') throw new Error('Pro subscription required')
 
-  const { data: findingRow } = await adminDb()
-    .from('findings')
-    .select('*, reports!inner(user_id)')
-    .eq('id', findingId)
-    .maybeSingle()
-  if (!findingRow || (findingRow.reports as { user_id: string }).user_id !== user.id)
+  const [finding] = await db
+    .select({
+      id:             findings.id,
+      title:          findings.title,
+      description:    findings.description,
+      cvssScore:      findings.cvssScore,
+      severity:       findings.severity,
+      impact:         findings.impact,
+      recommendation: findings.recommendation,
+      evidence:       findings.evidence,
+      reportUserId:   reports.userId,
+    })
+    .from(findings)
+    .innerJoin(reports, eq(findings.reportId, reports.id))
+    .where(eq(findings.id, findingId))
+    .limit(1)
+
+  if (!finding || finding.reportUserId !== user.id)
     throw new Error('Finding not found or access denied')
 
-  const f = camel<Finding>(findingRow as Record<string, unknown>)
-
-  const { error } = await adminDb().from('finding_templates').insert({
-    user_id:        user.id,
-    title:          f.title,
-    description:    f.description,
-    cvss_score:     f.cvssScore != null ? parseFloat(f.cvssScore) : null,
-    severity:       f.severity,
-    impact:         f.impact,
-    recommendation: f.recommendation,
-    evidence:       f.evidence,
+  await db.insert(findingTemplates).values({
+    userId:         user.id,
+    title:          finding.title,
+    description:    finding.description,
+    cvssScore:      finding.cvssScore,
+    severity:       finding.severity,
+    impact:         finding.impact,
+    recommendation: finding.recommendation,
+    evidence:       finding.evidence,
   })
-  if (error) throw new Error(error.message)
-
   revalidatePath('/templates')
 }
 
 export async function deleteTemplate(templateId: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthenticated')
-
-  const { error } = await adminDb()
-    .from('finding_templates')
-    .delete()
-    .eq('id', templateId)
-    .eq('user_id', user.id)
-  if (error) throw new Error(error.message)
-
+  const user = await getCurrentUser()
+  await db
+    .delete(findingTemplates)
+    .where(and(eq(findingTemplates.id, templateId), eq(findingTemplates.userId, user.id)))
   revalidatePath('/templates')
 }
