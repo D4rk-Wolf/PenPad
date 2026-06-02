@@ -32,10 +32,20 @@ const ThemeContext = createContext<{
 })
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [mode, setModeState] = useState<ThemeMode>(readStoredMode)
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(() =>
-    typeof window === 'undefined' ? 'light' : resolveTheme(readStoredMode())
-  )
+  // Always initialize with static values so the server render and the initial
+  // client hydration render produce identical trees. The inline <script> in
+  // layout.tsx handles preventing a visual flash by setting data-theme on
+  // <html> before React paints. We read the real stored preference in a
+  // useEffect (post-hydration) so there is no server/client mismatch.
+  const [mode, setModeState] = useState<ThemeMode>('system')
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>('light')
+
+  useEffect(() => {
+    // Sync state with stored preference after hydration
+    const stored = readStoredMode()
+    setModeState(stored)
+    setResolvedTheme(resolveTheme(stored))
+  }, [])
 
   useEffect(() => {
     const apply = () => {
