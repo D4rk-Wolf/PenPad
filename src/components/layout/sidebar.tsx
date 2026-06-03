@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { FileText, BookOpen, Settings, Sun, Moon, Monitor, X } from 'lucide-react'
+import { FileText, BookOpen, Settings, Key, Sun, Moon, Monitor, X } from 'lucide-react'
 import { useTheme } from '@/components/theme-provider'
 import { cn } from '@/lib/utils'
 
@@ -82,13 +82,26 @@ export function Sidebar({ user, signOut, open, onClose }: SidebarProps) {
             href="/settings"
             className={cn(
               'flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors',
-              pathname.startsWith('/settings')
+              pathname === '/settings'
                 ? 'bg-primary/10 text-primary font-semibold'
                 : 'text-muted-foreground hover:bg-muted hover:text-foreground'
             )}
           >
             <Settings className="w-4 h-4 shrink-0" />
             Settings
+          </Link>
+
+          <Link
+            href="/settings/license"
+            className={cn(
+              'flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors',
+              pathname.startsWith('/settings/license')
+                ? 'bg-primary/10 text-primary font-semibold'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+            )}
+          >
+            <Key className="w-4 h-4 shrink-0" />
+            License
           </Link>
         </nav>
 
