@@ -17,6 +17,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!user) redirect('/login')
 
   const adminEmail = process.env.ADMIN_EMAIL
+  // Security note: email comparison is safe once the admin account is registered,
+  // because auth_user.email has a unique constraint — no second user can claim it.
+  // Deployment requirement: admin MUST register first after initial deploy.
+  // TODO: replace with role-based check (isAdmin column) when email verification is added.
   if (!adminEmail || user.email !== adminEmail) notFound()
 
   return (
