@@ -1,20 +1,19 @@
 import { redirect } from 'next/navigation'
 import { notFound } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { headers } from 'next/headers'
+import { getCurrentUser } from '@/lib/auth/session'
+import { auth } from '@/lib/auth'
 import { AppShell } from '@/components/layout/app-shell'
 import { SentryReplayActivator } from '@/components/sentry-replay-activator'
 
 async function signOut() {
   'use server'
-  const supabase = await createClient()
-  await supabase.auth.signOut()
+  await auth.api.signOut({ headers: await headers() })
   redirect('/login')
 }
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
+  const user = await getCurrentUser()
   if (!user) redirect('/login')
 
   const adminEmail = process.env.ADMIN_EMAIL
@@ -23,8 +22,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <AppShell
       user={{
-        email: user.email ?? '',
-        name: user.user_metadata?.full_name as string | undefined,
+        email: user.email,
+        name: user.name ?? undefined,
       }}
       signOut={signOut}
     >

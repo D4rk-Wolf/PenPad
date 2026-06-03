@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser } from '@/lib/auth/session'
 import { getMyTemplates } from '@/app/actions/templates'
 import { getMySubscription } from '@/lib/subscriptions'
 
@@ -12,8 +12,7 @@ import { Icons } from '@/components/penpad/icons'
 export const dynamic = 'force-dynamic'
 
 export default async function TemplatesPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getCurrentUser()
   if (!user) redirect('/login')
   const sub = await getMySubscription()
   const isPro = sub?.status === 'active'

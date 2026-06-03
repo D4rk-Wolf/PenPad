@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser, requireUser } from '@/lib/auth/session'
 import { getMySubscription } from '@/lib/subscriptions'
 import { createCheckoutSession, createCustomerPortalSession } from '@/lib/stripe'
 
@@ -13,18 +13,14 @@ import { Field } from '@/components/penpad/ui'
 
 async function startCheckout() {
   'use server'
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
-  const session = await createCheckoutSession(user.id, user.email!)
+  const user = await requireUser()
+  const session = await createCheckoutSession(user.id, user.email)
   redirect(session.url!)
 }
 
 async function openPortal() {
   'use server'
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  await requireUser()
   const sub = await getMySubscription()
   if (!sub?.stripeCustomerId) redirect('/settings')
   const portal = await createCustomerPortalSession(sub.stripeCustomerId)
@@ -51,8 +47,7 @@ export default async function SettingsPage({
 }: {
   searchParams: Promise<{ success?: string; error?: string }>
 }) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getCurrentUser()
   if (!user) redirect('/login')
 
   const sub = await getMySubscription()
@@ -125,14 +120,14 @@ export default async function SettingsPage({
             <p className="settings-section-sub">Your account information.</p>
             <form action={updateProfile} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <Field label="Email">
-                <input className="input" type="email" defaultValue={user.email ?? ''} disabled style={{ opacity: 0.65 }} />
+                <input className="input" type="email" defaultValue={user.email} disabled style={{ opacity: 0.65 }} />
               </Field>
               <Field label="Full name" optional>
                 <input
                   className="input"
                   type="text"
                   name="fullName"
-                  defaultValue={user.user_metadata?.full_name ?? ''}
+                  defaultValue={user.name ?? ''}
                   placeholder="Jamie Foster"
                   maxLength={100}
                 />
