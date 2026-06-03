@@ -4,6 +4,7 @@ import { getCurrentUser } from '@/lib/auth/session'
 import { auth } from '@/lib/auth'
 import { AppShell } from '@/components/layout/app-shell'
 import { SentryReplayActivator } from '@/components/sentry-replay-activator'
+import { UpdateBanner } from '@/components/layout/update-banner'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser()
@@ -21,6 +22,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       signOut={signOut}
     >
       <SentryReplayActivator />
+      <UpdateBanner />
       {children}
     </AppShell>
   )
