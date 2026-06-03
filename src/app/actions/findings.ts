@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { eq, asc, and, count } from 'drizzle-orm'
 import { z } from 'zod'
-import { createClient } from '@/lib/supabase/server'
+import { requireUser } from '@/lib/auth/session'
 import { db } from '@/lib/db'
 import { reports, findings } from '@/lib/db/schema'
 import { getMySubscription } from '@/lib/subscriptions'
@@ -12,9 +12,7 @@ import type { Finding } from '@/lib/db/schema'
 import { deriveSeverity, FREE_FINDING_LIMIT } from '@/lib/utils'
 
 async function assertReportOwner(reportId: string): Promise<string> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthenticated')
+  const user = await requireUser()
 
   const [report] = await db
     .select({ id: reports.id })

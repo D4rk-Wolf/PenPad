@@ -2,7 +2,7 @@ import 'server-only'
 
 import { redirect, notFound } from 'next/navigation'
 import { count } from 'drizzle-orm'
-import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser } from '@/lib/auth/session'
 import { adminDb } from '@/lib/supabase/admin'
 import { db } from '@/lib/db'
 import { subscriptions, reports, findings } from '@/lib/db/schema'
@@ -10,8 +10,7 @@ import { subscriptions, reports, findings } from '@/lib/db/schema'
 const PRO_PRICE_GBP = 49
 
 async function assertAdmin() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getCurrentUser()
   if (!user) redirect('/login')
   const adminEmail = process.env.ADMIN_EMAIL
   if (!adminEmail || user.email !== adminEmail) notFound()

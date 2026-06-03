@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { eq, inArray } from 'drizzle-orm'
+import { getCurrentUser } from '@/lib/auth/session'
 import { createClient } from '@/lib/supabase/server'
 import { adminDb } from '@/lib/supabase/admin'
 import { db } from '@/lib/db'
@@ -11,14 +12,14 @@ import { getStripeInstance } from '@/lib/stripe'
 import { PasswordSchema } from '@/lib/validations'
 
 export async function updateProfile(formData: FormData) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getCurrentUser()
   if (!user) redirect('/login')
 
   const fullName = z.string().max(100).default('').parse(
     (formData.get('fullName') as string ?? '').trim()
   )
 
+  const supabase = await createClient()
   const { error } = await supabase.auth.updateUser({ data: { full_name: fullName } })
   if (error) {
     console.error('[updateProfile]', error)
@@ -28,8 +29,7 @@ export async function updateProfile(formData: FormData) {
 }
 
 export async function updatePassword(formData: FormData) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getCurrentUser()
   if (!user) redirect('/login')
 
   const parsed = PasswordSchema.safeParse({
@@ -40,6 +40,8 @@ export async function updatePassword(formData: FormData) {
   const { currentPassword, newPassword } = parsed.data
 
   if (currentPassword === newPassword) redirect('/settings?error=password-same#security')
+
+  const supabase = await createClient()
 
   // Verify current password before allowing the change
   const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -57,8 +59,7 @@ export async function updatePassword(formData: FormData) {
 }
 
 export async function deleteAccount(formData: FormData) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getCurrentUser()
   if (!user) redirect('/login')
 
   const confirmation = (formData.get('confirmation') as string ?? '').toLowerCase().trim()
@@ -115,6 +116,7 @@ export async function deleteAccount(formData: FormData) {
   }
 
   // 5. Clear local session cookies after the auth record is gone
+  const supabase = await createClient()
   await supabase.auth.signOut()
 
   redirect('/')

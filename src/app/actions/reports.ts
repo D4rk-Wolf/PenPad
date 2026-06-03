@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { eq, desc, count, and } from 'drizzle-orm'
-import { createClient } from '@/lib/supabase/server'
+import { requireUser } from '@/lib/auth/session'
 import { db } from '@/lib/db'
 import { reports, subscriptions } from '@/lib/db/schema'
 import { ReportSchema } from '@/lib/validations'
@@ -11,9 +11,7 @@ import type { Report } from '@/lib/db/schema'
 import { FREE_REPORT_LIMIT } from '@/lib/utils'
 
 async function getCurrentUserId(): Promise<string> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthenticated')
+  const user = await requireUser()
   return user.id
 }
 

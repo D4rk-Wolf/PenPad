@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { renderToBuffer } from '@react-pdf/renderer'
 import { eq, and, asc } from 'drizzle-orm'
-import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser } from '@/lib/auth/session'
 import { db } from '@/lib/db'
 import { reports, findings, subscriptions, userBranding } from '@/lib/db/schema'
 import { ReportDocument } from '@/components/pdf/report-document'
@@ -25,8 +25,7 @@ export async function GET(
 ) {
   const { id } = await params
 
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 })
 
   const [subRow] = await db

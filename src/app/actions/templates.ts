@@ -2,21 +2,14 @@
 
 import { revalidatePath } from 'next/cache'
 import { eq, desc, and } from 'drizzle-orm'
-import { createClient } from '@/lib/supabase/server'
+import { requireUser } from '@/lib/auth/session'
 import { db } from '@/lib/db'
 import { findings, findingTemplates, reports } from '@/lib/db/schema'
 import { getMySubscription } from '@/lib/subscriptions'
 import type { FindingTemplate } from '@/lib/db/schema'
 
-async function getCurrentUser() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthenticated')
-  return user
-}
-
 export async function getMyTemplates(): Promise<FindingTemplate[]> {
-  const user = await getCurrentUser()
+  const user = await requireUser()
   return db
     .select()
     .from(findingTemplates)
@@ -25,7 +18,7 @@ export async function getMyTemplates(): Promise<FindingTemplate[]> {
 }
 
 export async function saveTemplate(findingId: string) {
-  const user = await getCurrentUser()
+  const user = await requireUser()
 
   const sub = await getMySubscription()
   if (sub?.status !== 'active') throw new Error('Pro subscription required')
@@ -64,7 +57,7 @@ export async function saveTemplate(findingId: string) {
 }
 
 export async function deleteTemplate(templateId: string) {
-  const user = await getCurrentUser()
+  const user = await requireUser()
   const deleted = await db
     .delete(findingTemplates)
     .where(and(eq(findingTemplates.id, templateId), eq(findingTemplates.userId, user.id)))

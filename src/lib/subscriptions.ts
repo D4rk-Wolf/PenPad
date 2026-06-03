@@ -1,7 +1,7 @@
 import 'server-only'
 import { cache } from 'react'
 import { eq } from 'drizzle-orm'
-import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser } from '@/lib/auth/session'
 import { db } from '@/lib/db'
 import { subscriptions } from '@/lib/db/schema'
 import type { Subscription } from '@/lib/db/schema'
@@ -14,8 +14,7 @@ import type { Subscription } from '@/lib/db/schema'
  * issuing their own query.
  */
 export const getMySubscription = cache(async (): Promise<Subscription | null> => {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getCurrentUser()
   if (!user) return null
 
   const rows = await db

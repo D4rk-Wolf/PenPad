@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { eq, and } from 'drizzle-orm'
-import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser } from '@/lib/auth/session'
 import { db } from '@/lib/db'
 import { reports } from '@/lib/db/schema'
 import { getFindings } from '@/app/actions/findings'
@@ -22,8 +22,7 @@ const SEV_ORDER = { critical: 0, high: 1, medium: 2, low: 3, info: 4 }
 
 export default async function ReportPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getCurrentUser()
   if (!user) notFound()
 
   const [report] = await db

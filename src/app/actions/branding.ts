@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { eq } from 'drizzle-orm'
-import { createClient } from '@/lib/supabase/server'
+import { requireUser } from '@/lib/auth/session'
 import { db } from '@/lib/db'
 import { userBranding } from '@/lib/db/schema'
 import { getMySubscription } from '@/lib/subscriptions'
@@ -11,9 +11,7 @@ import type { UserBranding } from '@/lib/db/schema'
 const HEX_RE = /^#[0-9a-fA-F]{6}$/
 
 export async function getBranding(): Promise<UserBranding | null> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthenticated')
+  const user = await requireUser()
 
   const rows = await db
     .select()
@@ -24,9 +22,7 @@ export async function getBranding(): Promise<UserBranding | null> {
 }
 
 export async function updateBranding(formData: FormData) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthenticated')
+  const user = await requireUser()
 
   const sub = await getMySubscription()
   if (sub?.status !== 'active') throw new Error('Pro subscription required')
