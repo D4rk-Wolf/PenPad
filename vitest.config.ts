@@ -11,6 +11,7 @@ export default defineConfig({
     // Node environment for server-side logic (actions, lib utilities).
     // Use 'jsdom' per-file with @vitest/environment-jsdom for component tests.
     environment: 'node',
+    exclude: ['.worktrees/**', 'node_modules/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'lcov'],
