@@ -6,7 +6,6 @@ import { z } from 'zod'
 import { eq, inArray } from 'drizzle-orm'
 import { getCurrentUser } from '@/lib/auth/session'
 import { auth } from '@/lib/auth'
-import { adminDb } from '@/lib/supabase/admin'
 import { db } from '@/lib/db'
 import { reports, findings, findingTemplates, subscriptions, userBranding } from '@/lib/db/schema'
 import { getStripeInstance } from '@/lib/stripe'
@@ -111,17 +110,12 @@ export async function deleteAccount(formData: FormData) {
     db.delete(userBranding).where(eq(userBranding.userId, user.id)),
   ])
 
-  // 4. Delete the auth record — invalidates all active sessions and tokens.
-  //    Auth still lives in Supabase until Phase 2 (better-auth), so this
-  //    remains a Supabase admin operation with no Drizzle equivalent.
-  const { error: deleteErr } = await adminDb().auth.admin.deleteUser(user.id)
-  if (deleteErr) {
-    console.error('[deleteAccount] auth.admin.deleteUser failed:', deleteErr)
-    redirect('/settings?error=delete-failed#danger')
-  }
-
-  // 5. Clear local session cookies after the auth record is gone
-  await auth.api.signOut({ headers: await headers() })
+  // 4. Delete the auth record via better-auth — invalidates all active
+  //    sessions and tokens for the currently authenticated user.
+  await auth.api.deleteUser({
+    body: {},
+    headers: await headers(),
+  })
 
   redirect('/')
 }
