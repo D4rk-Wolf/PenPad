@@ -1,0 +1,12 @@
+node_modules
+.next
+.git
+.worktrees
+.env.local
+.env*.local
+*.log
+Dockerfile*
+docker-compose*
+.dockerignore
+docs/
+supabase/

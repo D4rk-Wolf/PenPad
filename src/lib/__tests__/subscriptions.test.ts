@@ -1,27 +1,28 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const mockLimit = vi.fn()
-const mockWhere = vi.fn().mockReturnValue({ limit: mockLimit })
-const mockFrom = vi.fn().mockReturnValue({ where: mockWhere })
-const mockSelect = vi.fn().mockReturnValue({ from: mockFrom })
+const { mockLimit, mockWhere, mockFrom, mockSelect, mockGetCurrentUser } = vi.hoisted(() => {
+  const mockLimit = vi.fn()
+  const mockWhere = vi.fn().mockReturnValue({ limit: mockLimit })
+  const mockFrom = vi.fn().mockReturnValue({ where: mockWhere })
+  const mockSelect = vi.fn().mockReturnValue({ from: mockFrom })
+  const mockGetCurrentUser = vi.fn()
+  return { mockLimit, mockWhere, mockFrom, mockSelect, mockGetCurrentUser }
+})
 
 vi.mock('@/lib/db', () => ({
   db: { select: mockSelect },
 }))
 
-const mockGetCurrentUser = vi.fn()
-
 vi.mock('@/lib/auth/session', () => ({
   getCurrentUser: mockGetCurrentUser,
 }))
 
-vi.mock('server-only', () => ({}))
+
+import { getMySubscription } from '@/lib/subscriptions'
 
 describe('getMySubscription', () => {
   beforeEach(() => {
-    vi.resetModules()
     vi.clearAllMocks()
-    // Re-wire the chain after clearAllMocks
     mockWhere.mockReturnValue({ limit: mockLimit })
     mockFrom.mockReturnValue({ where: mockWhere })
     mockSelect.mockReturnValue({ from: mockFrom })
@@ -29,7 +30,6 @@ describe('getMySubscription', () => {
 
   it('returns null when user is not authenticated', async () => {
     mockGetCurrentUser.mockResolvedValue(null)
-    const { getMySubscription } = await import('@/lib/subscriptions')
     const result = await getMySubscription()
     expect(result).toBeNull()
     expect(mockSelect).not.toHaveBeenCalled()
@@ -38,7 +38,6 @@ describe('getMySubscription', () => {
   it('returns null when user has no subscription', async () => {
     mockGetCurrentUser.mockResolvedValue({ id: 'user-123' })
     mockLimit.mockResolvedValue([])
-    const { getMySubscription } = await import('@/lib/subscriptions')
     const result = await getMySubscription()
     expect(result).toBeNull()
   })
@@ -55,7 +54,6 @@ describe('getMySubscription', () => {
     }
     mockGetCurrentUser.mockResolvedValue({ id: 'user-123' })
     mockLimit.mockResolvedValue([fakeSubscription])
-    const { getMySubscription } = await import('@/lib/subscriptions')
     const result = await getMySubscription()
     expect(result).toEqual(fakeSubscription)
   })
