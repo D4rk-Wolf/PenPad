@@ -1,11 +1,13 @@
 import 'server-only'
 import { cache } from 'react'
-import { createClient } from '@/lib/supabase/server'
+import { headers } from 'next/headers'
+import { auth } from '@/lib/auth'
 
 export const getCurrentUser = cache(async () => {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  return user ?? null
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  })
+  return session?.user ?? null
 })
 
 export async function requireUser() {

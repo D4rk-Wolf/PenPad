@@ -9,12 +9,10 @@ vi.mock('@/lib/db', () => ({
   db: { select: mockSelect },
 }))
 
-const mockGetUser = vi.fn()
+const mockGetCurrentUser = vi.fn()
 
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: vi.fn().mockResolvedValue({
-    auth: { getUser: mockGetUser },
-  }),
+vi.mock('@/lib/auth/session', () => ({
+  getCurrentUser: mockGetCurrentUser,
 }))
 
 vi.mock('server-only', () => ({}))
@@ -30,7 +28,7 @@ describe('getMySubscription', () => {
   })
 
   it('returns null when user is not authenticated', async () => {
-    mockGetUser.mockResolvedValue({ data: { user: null } })
+    mockGetCurrentUser.mockResolvedValue(null)
     const { getMySubscription } = await import('@/lib/subscriptions')
     const result = await getMySubscription()
     expect(result).toBeNull()
@@ -38,7 +36,7 @@ describe('getMySubscription', () => {
   })
 
   it('returns null when user has no subscription', async () => {
-    mockGetUser.mockResolvedValue({ data: { user: { id: 'user-123' } } })
+    mockGetCurrentUser.mockResolvedValue({ id: 'user-123' })
     mockLimit.mockResolvedValue([])
     const { getMySubscription } = await import('@/lib/subscriptions')
     const result = await getMySubscription()
@@ -55,7 +53,7 @@ describe('getMySubscription', () => {
       currentPeriodEnd: null,
       updatedAt: new Date(),
     }
-    mockGetUser.mockResolvedValue({ data: { user: { id: 'user-123' } } })
+    mockGetCurrentUser.mockResolvedValue({ id: 'user-123' })
     mockLimit.mockResolvedValue([fakeSubscription])
     const { getMySubscription } = await import('@/lib/subscriptions')
     const result = await getMySubscription()

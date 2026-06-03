@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
+import { signIn, signUp } from '@/lib/auth/client'
 import { BrandMark } from '@/components/penpad/brand-mark'
 import { Icons } from '@/components/penpad/icons'
 import { Field } from '@/components/penpad/ui'
@@ -11,13 +11,13 @@ import { Field } from '@/components/penpad/ui'
 type Mode = 'login' | 'signup'
 
 export function AuthForm({ mode }: { mode: Mode }) {
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const [emailSent, setEmailSent] = useState(false)
+  const [emailSent] = useState(false)
   const router = useRouter()
-  const supabase = createClient()
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -25,21 +25,16 @@ export function AuthForm({ mode }: { mode: Mode }) {
     setError(null)
 
     if (mode === 'login') {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) { setError(error.message); setLoading(false); return }
+      const { error } = await signIn.email({ email, password })
+      if (error) { setError(error.message ?? 'Sign in failed'); setLoading(false); return }
       router.push('/dashboard')
       router.refresh()
     } else {
-      const { data, error } = await supabase.auth.signUp({ email, password })
-      if (error) { setError(error.message); setLoading(false); return }
-      if (data.session) {
-        // Email confirmation disabled — signed in immediately
-        router.push('/dashboard')
-        router.refresh()
-      } else {
-        // Email confirmation enabled — prompt user to check inbox
-        setEmailSent(true)
-      }
+      const { error } = await signUp.email({ name, email, password })
+      if (error) { setError(error.message ?? 'Sign up failed'); setLoading(false); return }
+      // Email confirmation disabled — signed in immediately
+      router.push('/dashboard')
+      router.refresh()
     }
   }
 
@@ -98,6 +93,20 @@ export function AuthForm({ mode }: { mode: Mode }) {
           </p>
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {mode === 'signup' && (
+              <Field label="Full name">
+                <input
+                  className="input"
+                  type="text"
+                  placeholder="Jane Doe"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  required
+                  autoComplete="name"
+                />
+              </Field>
+            )}
+
             <Field label="Email address">
               <input
                 className="input"

@@ -1,10 +1,11 @@
 'use server'
 
 import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
 import { z } from 'zod'
 import { eq, inArray } from 'drizzle-orm'
 import { getCurrentUser } from '@/lib/auth/session'
-import { createClient } from '@/lib/supabase/server'
+import { auth } from '@/lib/auth'
 import { adminDb } from '@/lib/supabase/admin'
 import { db } from '@/lib/db'
 import { reports, findings, findingTemplates, subscriptions, userBranding } from '@/lib/db/schema'
@@ -19,9 +20,12 @@ export async function updateProfile(formData: FormData) {
     (formData.get('fullName') as string ?? '').trim()
   )
 
-  const supabase = await createClient()
-  const { error } = await supabase.auth.updateUser({ data: { full_name: fullName } })
-  if (error) {
+  try {
+    await auth.api.updateUser({
+      body: { name: fullName },
+      headers: await headers(),
+    })
+  } catch (error) {
     console.error('[updateProfile]', error)
     redirect('/settings?error=profile')
   }
@@ -41,17 +45,18 @@ export async function updatePassword(formData: FormData) {
 
   if (currentPassword === newPassword) redirect('/settings?error=password-same#security')
 
-  const supabase = await createClient()
-
-  // Verify current password before allowing the change
-  const { error: signInError } = await supabase.auth.signInWithPassword({
-    email: user.email!,
-    password: currentPassword,
-  })
-  if (signInError) redirect('/settings?error=password-wrong#security')
-
-  const { error } = await supabase.auth.updateUser({ password: newPassword })
-  if (error) {
+  // better-auth verifies the current password and rejects with an APIError
+  // (HTTP 400 INVALID_PASSWORD) when it doesn't match — no separate sign-in check needed.
+  try {
+    await auth.api.changePassword({
+      body: { currentPassword, newPassword, revokeOtherSessions: true },
+      headers: await headers(),
+    })
+  } catch (error) {
+    const status = (error as { status?: number | string })?.status
+    if (status === 400 || status === 'BAD_REQUEST' || status === 'UNAUTHORIZED') {
+      redirect('/settings?error=password-wrong#security')
+    }
     console.error('[updatePassword]', error)
     redirect('/settings?error=password#security')
   }
@@ -116,8 +121,7 @@ export async function deleteAccount(formData: FormData) {
   }
 
   // 5. Clear local session cookies after the auth record is gone
-  const supabase = await createClient()
-  await supabase.auth.signOut()
+  await auth.api.signOut({ headers: await headers() })
 
   redirect('/')
 }
