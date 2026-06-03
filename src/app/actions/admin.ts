@@ -3,9 +3,9 @@ import 'server-only'
 import { redirect, notFound } from 'next/navigation'
 import { count } from 'drizzle-orm'
 import { getCurrentUser } from '@/lib/auth/session'
-import { adminDb } from '@/lib/supabase/admin'
 import { db } from '@/lib/db'
 import { subscriptions, reports, findings } from '@/lib/db/schema'
+import { authUser } from '@/lib/db/auth-schema'
 
 const PRO_PRICE_GBP = 49
 
@@ -50,10 +50,12 @@ export async function getAnalyticsData(): Promise<AnalyticsData> {
 
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
 
-  // Auth still lives in Supabase until Phase 2 (better-auth), so the user
-  // list remains a Supabase admin operation with no Drizzle equivalent.
-  const [usersResult, subsRows, reportsRows, findingsCountRows] = await Promise.all([
-    adminDb().auth.admin.listUsers({ perPage: 1000 }),
+  const [users, subsRows, reportsRows, findingsCountRows] = await Promise.all([
+    db.select({
+      id:        authUser.id,
+      email:     authUser.email,
+      createdAt: authUser.createdAt,
+    }).from(authUser),
     db.select({
       userId:    subscriptions.userId,
       status:    subscriptions.status,
@@ -67,9 +69,6 @@ export async function getAnalyticsData(): Promise<AnalyticsData> {
     db.select({ value: count() }).from(findings),
   ])
 
-  if (usersResult.error) throw new Error(usersResult.error.message)
-
-  const users = usersResult.data.users
   const subsData = subsRows
   const reportsData = reportsRows
   const totalFindings = findingsCountRows[0]?.value ?? 0
@@ -80,7 +79,7 @@ export async function getAnalyticsData(): Promise<AnalyticsData> {
   const proCount = proUserIds.size
   const totalUsers = users.length
 
-  const newSignups30d = users.filter(u => new Date(u.created_at) > thirtyDaysAgo).length
+  const newSignups30d = users.filter(u => u.createdAt > thirtyDaysAgo).length
 
   // "Active" = created a report in the window; a proxy for product engagement
   const activeUserIds = new Set(
@@ -105,14 +104,15 @@ export async function getAnalyticsData(): Promise<AnalyticsData> {
     ? Math.round(totalFindings / totalReports)
     : 0
 
-  const recentSignIns: RecentSignIn[] = users
-    .filter(u => u.last_sign_in_at)
-    .sort((a, b) => new Date(b.last_sign_in_at!).getTime() - new Date(a.last_sign_in_at!).getTime())
+  // better-auth does not track last_sign_in_at, so "recent" is the most recent
+  // signups by createdAt; lastSignIn is unavailable and reported as null.
+  const recentSignIns: RecentSignIn[] = [...users]
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
     .slice(0, 10)
     .map(u => ({
       email: u.email ?? 'unknown',
-      createdAt: u.created_at,
-      lastSignIn: u.last_sign_in_at ?? null,
+      createdAt: u.createdAt.toISOString(),
+      lastSignIn: null,
       isPro: proUserIds.has(u.id),
     }))
 
@@ -134,7 +134,7 @@ export async function getAnalyticsData(): Promise<AnalyticsData> {
   }
 }
 
-function buildDailySignups(users: { created_at: string }[], days: number): DailySignup[] {
+function buildDailySignups(users: { createdAt: Date }[], days: number): DailySignup[] {
   const buckets: DailySignup[] = []
   const now = new Date()
 
@@ -145,7 +145,7 @@ function buildDailySignups(users: { created_at: string }[], days: number): Daily
   }
 
   for (const user of users) {
-    const dateStr = new Date(user.created_at).toISOString().split('T')[0]
+    const dateStr = user.createdAt.toISOString().split('T')[0]
     const bucket = buckets.find(b => b.date === dateStr)
     if (bucket) bucket.signups++
   }

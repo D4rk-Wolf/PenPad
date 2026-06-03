@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { eq } from 'drizzle-orm'
 import { getStripeInstance } from '@/lib/stripe'
-import { adminDb } from '@/lib/supabase/admin'
 import { db } from '@/lib/db'
 import { subscriptions, stripeEventsProcessed } from '@/lib/db/schema'
+import { authUser as authUserTable } from '@/lib/db/auth-schema'
 import type Stripe from 'stripe'
 
 function getPeriodEnd(sub: Stripe.Subscription): Date | null {
@@ -58,9 +58,13 @@ export async function POST(request: NextRequest) {
         const userId = checkoutSession.metadata?.userId
         if (!userId) break
 
-        // auth.admin.getUserById has no Drizzle equivalent — kept on adminDb until Phase 2
-        const { data: authUser, error: authErr } = await adminDb().auth.admin.getUserById(userId)
-        if (authErr || !authUser?.user) {
+        const [foundUser] = await db
+          .select({ id: authUserTable.id, email: authUserTable.email })
+          .from(authUserTable)
+          .where(eq(authUserTable.id, userId))
+          .limit(1)
+
+        if (!foundUser) {
           console.error('[stripe/webhook] userId not found in auth:', userId)
           break
         }
@@ -71,11 +75,11 @@ export async function POST(request: NextRequest) {
           console.error('[stripe/webhook] Stripe customer deleted:', stripeCustomerId)
           break
         }
-        if (stripeCustomer.email && authUser.user.email &&
-            stripeCustomer.email.toLowerCase() !== authUser.user.email.toLowerCase()) {
+        if (stripeCustomer.email && foundUser.email &&
+            stripeCustomer.email.toLowerCase() !== foundUser.email.toLowerCase()) {
           console.error(
             '[stripe/webhook] customer email mismatch — Stripe:', stripeCustomer.email,
-            '— auth:', authUser.user.email,
+            '— auth:', foundUser.email,
           )
           break
         }
