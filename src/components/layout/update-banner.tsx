@@ -3,7 +3,7 @@ import pkg from '../../../package.json'
 
 async function getLatestVersion(): Promise<string | null> {
   try {
-    const res = await fetch('https://pen-pad.vercel.app/api/version', {
+    const res = await fetch('https://penpad.co.uk/api/version', {
       next: { revalidate: 86400 },
     })
     const json = await res.json()
