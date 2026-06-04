@@ -1,7 +1,13 @@
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
+import bcrypt from 'bcryptjs'
 import { db } from '@/lib/db'
 import { authUser, authSession, authAccount, authVerification } from '@/lib/db/auth-schema'
+
+// Use bcrypt for password hashing so credentials migrated from Supabase Auth
+// (which stores $2a$ bcrypt hashes) validate without forcing a password reset.
+// New passwords are also bcrypt, keeping a single scheme across migrated and new users.
+const BCRYPT_COST = 10
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -16,10 +22,22 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,
+    password: {
+      hash: (password) => bcrypt.hash(password, BCRYPT_COST),
+      verify: ({ hash, password }) => bcrypt.compare(password, hash),
+    },
   },
   user: {
     deleteUser: {
       enabled: true,
+    },
+  },
+  advanced: {
+    database: {
+      // Generate UUID user IDs so they are compatible with the existing
+      // uuid-typed user_id columns on reports/findings/subscriptions/etc.
+      // Also lets Supabase Auth users (whose IDs are UUIDs) migrate 1:1.
+      generateId: 'uuid',
     },
   },
   trustedOrigins: [
