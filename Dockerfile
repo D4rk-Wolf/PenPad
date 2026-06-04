@@ -19,11 +19,21 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs && \
     adduser  --system --uid 1001 nextjs
 
+# Next.js standalone server (app runtime)
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static     ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/public           ./public
 COPY --from=builder --chown=nextjs:nodejs /app/scripts          ./scripts
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.bin/drizzle-kit ./node_modules/.bin/drizzle-kit
+
+# Schema-sync tooling for startup migration (drizzle-kit push).
+# The Next.js standalone bundle does not include drizzle-kit (a devDependency) or
+# the Drizzle schema source, so copy the full node_modules plus the config and
+# schema files needed by `drizzle-kit push` to provision a fresh database.
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules      ./node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/drizzle.config.ts ./drizzle.config.ts
+COPY --from=builder --chown=nextjs:nodejs /app/src/lib/db        ./src/lib/db
+COPY --from=builder --chown=nextjs:nodejs /app/package.json      ./package.json
+COPY --from=builder --chown=nextjs:nodejs /app/tsconfig.json     ./tsconfig.json
 
 USER nextjs
 EXPOSE 3000
