@@ -25,15 +25,16 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static     ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/public           ./public
 COPY --from=builder --chown=nextjs:nodejs /app/scripts          ./scripts
 
-# Schema-sync tooling for startup migration (drizzle-kit push).
-# The Next.js standalone bundle does not include drizzle-kit (a devDependency) or
-# the Drizzle schema source, so copy the full node_modules plus the config and
-# schema files needed by `drizzle-kit push` to provision a fresh database.
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules      ./node_modules
-COPY --from=builder --chown=nextjs:nodejs /app/drizzle.config.ts ./drizzle.config.ts
-COPY --from=builder --chown=nextjs:nodejs /app/src/lib/db        ./src/lib/db
-COPY --from=builder --chown=nextjs:nodejs /app/package.json      ./package.json
-COPY --from=builder --chown=nextjs:nodejs /app/tsconfig.json     ./tsconfig.json
+# Migration tooling for startup. The Next.js standalone bundle excludes drizzle-kit
+# (a devDependency), so copy the full node_modules plus the self-hosted migration
+# lineage (drizzle/) and its config. `drizzle-kit migrate` applies the versioned,
+# forward-only SQL in drizzle/ — no destructive DDL is generated at runtime.
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules                  ./node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/drizzle                       ./drizzle
+COPY --from=builder --chown=nextjs:nodejs /app/drizzle.config.selfhosted.ts  ./drizzle.config.selfhosted.ts
+COPY --from=builder --chown=nextjs:nodejs /app/src/lib/db                    ./src/lib/db
+COPY --from=builder --chown=nextjs:nodejs /app/package.json                  ./package.json
+COPY --from=builder --chown=nextjs:nodejs /app/tsconfig.json                 ./tsconfig.json
 
 USER nextjs
 EXPOSE 3000

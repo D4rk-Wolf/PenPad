@@ -1,11 +1,12 @@
 #!/bin/sh
 set -e
-echo "Syncing database schema (drizzle-kit push)..."
-# `push` provisions a fresh Postgres directly from the Drizzle schema. This is the
-# correct path for self-hosted: the repo's migration files are a hybrid (hand-written
-# Supabase SQL + a Drizzle-generated auth migration) whose journal does not describe a
-# full fresh-DB baseline, so `drizzle-kit migrate` cannot build the schema from empty.
-# `push` is idempotent — on restart it is a no-op when the schema already matches.
-./node_modules/.bin/drizzle-kit push --force
+# Apply forward-only, version-tracked migrations from the self-hosted lineage
+# (drizzle/). Unlike `push --force`, `migrate` never issues destructive DDL on its
+# own — it only runs the reviewed SQL in drizzle/*.sql that has not yet been applied,
+# recorded in the __drizzle_migrations table. Safe to run on every container start:
+# already-applied migrations are skipped. Operators review any schema change as a
+# committed migration file before it ships in an image.
+echo "Applying database migrations (drizzle-kit migrate)..."
+./node_modules/.bin/drizzle-kit migrate --config=drizzle.config.selfhosted.ts
 echo "Starting server..."
 exec node server.js
