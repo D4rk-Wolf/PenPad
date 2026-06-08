@@ -1,9 +1,10 @@
 // src/app/(app)/reports/[id]/export/route.tsx
 import { NextRequest, NextResponse } from 'next/server'
 import { renderToBuffer } from '@react-pdf/renderer'
-import { createClient } from '@/lib/supabase/server'
-import { adminDb, camel } from '@/lib/supabase/admin'
-import type { Report, Finding, Subscription, UserBranding } from '@/lib/db/schema'
+import { eq, and, asc } from 'drizzle-orm'
+import { getCurrentUser } from '@/lib/auth/session'
+import { db } from '@/lib/db'
+import { reports, findings, subscriptions, userBranding } from '@/lib/db/schema'
 import { ReportDocument } from '@/components/pdf/report-document'
 
 // Force Node.js runtime — react-pdf uses Node-only APIs (fs, Buffer)
@@ -24,46 +25,37 @@ export async function GET(
 ) {
   const { id } = await params
 
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 })
 
-  const { data: subRow } = await adminDb()
-    .from('subscriptions')
-    .select('*')
-    .eq('user_id', user.id)
-    .maybeSingle()
-  const sub = subRow ? camel<Subscription>(subRow as Record<string, unknown>) : null
+  const [subRow] = await db
+    .select()
+    .from(subscriptions)
+    .where(eq(subscriptions.userId, user.id))
+    .limit(1)
+  const sub = subRow ?? null
 
   if (sub?.status !== 'active') {
     return NextResponse.json({ error: 'Pro subscription required' }, { status: 403 })
   }
 
-  const { data: reportRow } = await adminDb()
-    .from('reports')
-    .select('*')
-    .eq('id', id)
-    .eq('user_id', user.id)
-    .maybeSingle()
-  if (!reportRow) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-  const report = camel<Report>(reportRow as Record<string, unknown>)
+  const [report] = await db
+    .select()
+    .from(reports)
+    .where(and(eq(reports.id, id), eq(reports.userId, user.id)))
+    .limit(1)
+  if (!report) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
-  const [{ data: findingRows }, { data: brandingRow }] = await Promise.all([
-    adminDb()
-      .from('findings')
-      .select('*')
-      .eq('report_id', id)
-      .order('sort_order')
-      .order('created_at')
+  const [findingList, brandingRow] = await Promise.all([
+    db.select().from(findings)
+      .where(eq(findings.reportId, id))
+      .orderBy(asc(findings.sortOrder), asc(findings.createdAt))
       .limit(MAX_FINDINGS_IN_EXPORT),
-    adminDb()
-      .from('user_branding')
-      .select('*')
-      .eq('user_id', user.id)
-      .maybeSingle(),
+    db.select().from(userBranding)
+      .where(eq(userBranding.userId, user.id))
+      .limit(1),
   ])
-  const findingList = (findingRows ?? []).map(f => camel<Finding>(f as Record<string, unknown>))
-  const branding = brandingRow ? camel<UserBranding>(brandingRow as Record<string, unknown>) : undefined
+  const branding = brandingRow[0] ?? undefined
 
   // Race the render against a hard timeout so we never hit the Vercel wall-clock limit silently
   let buffer: Buffer

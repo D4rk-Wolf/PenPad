@@ -1,31 +1,28 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
-import { adminDb, camel } from '@/lib/supabase/admin'
+import { eq } from 'drizzle-orm'
+import { requireUser } from '@/lib/auth/session'
+import { db } from '@/lib/db'
+import { userBranding } from '@/lib/db/schema'
 import { getMySubscription } from '@/lib/subscriptions'
 import type { UserBranding } from '@/lib/db/schema'
 
 const HEX_RE = /^#[0-9a-fA-F]{6}$/
 
 export async function getBranding(): Promise<UserBranding | null> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthenticated')
+  const user = await requireUser()
 
-  const { data, error } = await adminDb()
-    .from('user_branding')
-    .select('*')
-    .eq('user_id', user.id)
-    .maybeSingle()
-  if (error) throw new Error(error.message)
-  return data ? camel<UserBranding>(data as Record<string, unknown>) : null
+  const rows = await db
+    .select()
+    .from(userBranding)
+    .where(eq(userBranding.userId, user.id))
+    .limit(1)
+  return rows[0] ?? null
 }
 
 export async function updateBranding(formData: FormData) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthenticated')
+  const user = await requireUser()
 
   const sub = await getMySubscription()
   if (sub?.status !== 'active') throw new Error('Pro subscription required')
@@ -37,13 +34,18 @@ export async function updateBranding(formData: FormData) {
     throw new Error('Brand colour must be a valid hex value (e.g. #1d4ed8)')
   }
 
-  const { error } = await adminDb()
-    .from('user_branding')
-    .upsert(
-      { user_id: user.id, company_name: companyName, primary_color: primaryColor, updated_at: new Date().toISOString() },
-      { onConflict: 'user_id' }
-    )
-  if (error) throw new Error(error.message)
+  await db
+    .insert(userBranding)
+    .values({
+      userId:       user.id,
+      companyName,
+      primaryColor,
+      updatedAt:    new Date(),
+    })
+    .onConflictDoUpdate({
+      target: userBranding.userId,
+      set: { companyName, primaryColor, updatedAt: new Date() },
+    })
 
   revalidatePath('/settings')
 }

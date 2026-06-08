@@ -1,23 +1,30 @@
 'use server'
 
 import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
 import { z } from 'zod'
-import { createClient } from '@/lib/supabase/server'
-import { adminDb } from '@/lib/supabase/admin'
+import { eq, inArray } from 'drizzle-orm'
+import { getCurrentUser } from '@/lib/auth/session'
+import { auth } from '@/lib/auth'
+import { db } from '@/lib/db'
+import { reports, findings, findingTemplates, subscriptions, userBranding } from '@/lib/db/schema'
 import { getStripeInstance } from '@/lib/stripe'
 import { PasswordSchema } from '@/lib/validations'
 
 export async function updateProfile(formData: FormData) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getCurrentUser()
   if (!user) redirect('/login')
 
   const fullName = z.string().max(100).default('').parse(
     (formData.get('fullName') as string ?? '').trim()
   )
 
-  const { error } = await supabase.auth.updateUser({ data: { full_name: fullName } })
-  if (error) {
+  try {
+    await auth.api.updateUser({
+      body: { name: fullName },
+      headers: await headers(),
+    })
+  } catch (error) {
     console.error('[updateProfile]', error)
     redirect('/settings?error=profile')
   }
@@ -25,8 +32,7 @@ export async function updateProfile(formData: FormData) {
 }
 
 export async function updatePassword(formData: FormData) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getCurrentUser()
   if (!user) redirect('/login')
 
   const parsed = PasswordSchema.safeParse({
@@ -38,15 +44,18 @@ export async function updatePassword(formData: FormData) {
 
   if (currentPassword === newPassword) redirect('/settings?error=password-same#security')
 
-  // Verify current password before allowing the change
-  const { error: signInError } = await supabase.auth.signInWithPassword({
-    email: user.email!,
-    password: currentPassword,
-  })
-  if (signInError) redirect('/settings?error=password-wrong#security')
-
-  const { error } = await supabase.auth.updateUser({ password: newPassword })
-  if (error) {
+  // better-auth verifies the current password and rejects with an APIError
+  // (HTTP 400 INVALID_PASSWORD) when it doesn't match — no separate sign-in check needed.
+  try {
+    await auth.api.changePassword({
+      body: { currentPassword, newPassword, revokeOtherSessions: true },
+      headers: await headers(),
+    })
+  } catch (error) {
+    const status = (error as { status?: number | string })?.status
+    if (status === 400 || status === 'BAD_REQUEST' || status === 'UNAUTHORIZED') {
+      redirect('/settings?error=password-wrong#security')
+    }
     console.error('[updatePassword]', error)
     redirect('/settings?error=password#security')
   }
@@ -54,26 +63,28 @@ export async function updatePassword(formData: FormData) {
 }
 
 export async function deleteAccount(formData: FormData) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getCurrentUser()
   if (!user) redirect('/login')
 
   const confirmation = (formData.get('confirmation') as string ?? '').toLowerCase().trim()
   if (confirmation !== 'delete my account') redirect('/settings?error=delete-confirm#danger')
 
   // 1. Read subscription before any destructive operations
-  const { data: subRow } = await adminDb()
-    .from('subscriptions')
-    .select('stripe_subscription_id, status')
-    .eq('user_id', user.id)
-    .maybeSingle()
+  const [subRow] = await db
+    .select({
+      stripeSubscriptionId: subscriptions.stripeSubscriptionId,
+      status:               subscriptions.status,
+    })
+    .from(subscriptions)
+    .where(eq(subscriptions.userId, user.id))
+    .limit(1)
 
   // 2. Cancel active Stripe subscription — fail-closed:
   //    abort the whole deletion if Stripe cancellation fails to avoid
   //    the user being charged after their account no longer exists.
-  if (subRow?.stripe_subscription_id && subRow.status === 'active') {
+  if (subRow?.stripeSubscriptionId && subRow.status === 'active') {
     try {
-      await getStripeInstance().subscriptions.cancel(subRow.stripe_subscription_id)
+      await getStripeInstance().subscriptions.cancel(subRow.stripeSubscriptionId)
     } catch (e) {
       console.error('[deleteAccount] Stripe cancel failed — aborting deletion:', e)
       redirect('/settings?error=delete-billing#danger')
@@ -81,34 +92,30 @@ export async function deleteAccount(formData: FormData) {
   }
 
   // 3. Delete data in dependency order (findings first, then parent rows)
-  const { data: reportIds } = await adminDb()
-    .from('reports')
-    .select('id')
-    .eq('user_id', user.id)
+  const reportIds = await db
+    .select({ id: reports.id })
+    .from(reports)
+    .where(eq(reports.userId, user.id))
 
-  if (reportIds?.length) {
-    await adminDb()
-      .from('findings')
-      .delete()
-      .in('report_id', reportIds.map(r => r.id))
+  if (reportIds.length) {
+    await db
+      .delete(findings)
+      .where(inArray(findings.reportId, reportIds.map(r => r.id)))
   }
 
   await Promise.all([
-    adminDb().from('finding_templates').delete().eq('user_id', user.id),
-    adminDb().from('reports').delete().eq('user_id', user.id),
-    adminDb().from('subscriptions').delete().eq('user_id', user.id),
-    adminDb().from('user_branding').delete().eq('user_id', user.id),
+    db.delete(findingTemplates).where(eq(findingTemplates.userId, user.id)),
+    db.delete(reports).where(eq(reports.userId, user.id)),
+    db.delete(subscriptions).where(eq(subscriptions.userId, user.id)),
+    db.delete(userBranding).where(eq(userBranding.userId, user.id)),
   ])
 
-  // 4. Delete the auth record — invalidates all active sessions and tokens
-  const { error: deleteErr } = await adminDb().auth.admin.deleteUser(user.id)
-  if (deleteErr) {
-    console.error('[deleteAccount] auth.admin.deleteUser failed:', deleteErr)
-    redirect('/settings?error=delete-failed#danger')
-  }
-
-  // 5. Clear local session cookies after the auth record is gone
-  await supabase.auth.signOut()
+  // 4. Delete the auth record via better-auth — invalidates all active
+  //    sessions and tokens for the currently authenticated user.
+  await auth.api.deleteUser({
+    body: {},
+    headers: await headers(),
+  })
 
   redirect('/')
 }

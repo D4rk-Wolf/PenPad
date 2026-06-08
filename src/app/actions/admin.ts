@@ -1,14 +1,16 @@
 import 'server-only'
 
 import { redirect, notFound } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
-import { adminDb } from '@/lib/supabase/admin'
+import { count } from 'drizzle-orm'
+import { getCurrentUser } from '@/lib/auth/session'
+import { db } from '@/lib/db'
+import { subscriptions, reports, findings } from '@/lib/db/schema'
+import { authUser } from '@/lib/db/auth-schema'
 
 const PRO_PRICE_GBP = 49
 
 async function assertAdmin() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getCurrentUser()
   if (!user) redirect('/login')
   const adminEmail = process.env.ADMIN_EMAIL
   if (!adminEmail || user.email !== adminEmail) notFound()
@@ -48,62 +50,69 @@ export async function getAnalyticsData(): Promise<AnalyticsData> {
 
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
 
-  const [usersResult, subsResult, reportsResult, findingsResult] = await Promise.all([
-    adminDb().auth.admin.listUsers({ perPage: 1000 }),
-    adminDb().from('subscriptions').select('user_id, status, updated_at'),
-    adminDb().from('reports').select('user_id, created_at, status'),
-    adminDb().from('findings').select('id', { count: 'exact', head: true }),
+  const [users, subsRows, reportsRows, findingsCountRows] = await Promise.all([
+    db.select({
+      id:        authUser.id,
+      email:     authUser.email,
+      createdAt: authUser.createdAt,
+    }).from(authUser),
+    db.select({
+      userId:    subscriptions.userId,
+      status:    subscriptions.status,
+      updatedAt: subscriptions.updatedAt,
+    }).from(subscriptions),
+    db.select({
+      userId:    reports.userId,
+      createdAt: reports.createdAt,
+      status:    reports.status,
+    }).from(reports),
+    db.select({ value: count() }).from(findings),
   ])
 
-  if (usersResult.error) throw new Error(usersResult.error.message)
-  if (subsResult.error) throw new Error(subsResult.error.message)
-  if (reportsResult.error) throw new Error(reportsResult.error.message)
-  if (findingsResult.error) throw new Error(findingsResult.error.message)
+  const subsData = subsRows
+  const reportsData = reportsRows
+  const totalFindings = findingsCountRows[0]?.value ?? 0
 
-  const users = usersResult.data.users
-  const subscriptions = subsResult.data ?? []
-  const reports = reportsResult.data ?? []
-  const totalFindings = findingsResult.count ?? 0
-
-  const activeSubs = subscriptions.filter(s => s.status === 'active')
-  const proUserIds = new Set(activeSubs.map(s => s.user_id))
+  const activeSubs = subsData.filter(s => s.status === 'active')
+  const proUserIds = new Set(activeSubs.map(s => s.userId))
   // Use Set size to deduplicate — guards against duplicate subscription rows from webhook replays
   const proCount = proUserIds.size
   const totalUsers = users.length
 
-  const newSignups30d = users.filter(u => new Date(u.created_at) > thirtyDaysAgo).length
+  const newSignups30d = users.filter(u => u.createdAt > thirtyDaysAgo).length
 
   // "Active" = created a report in the window; a proxy for product engagement
   const activeUserIds = new Set(
-    reports
-      .filter(r => new Date(r.created_at) > thirtyDaysAgo)
-      .map(r => r.user_id)
+    reportsData
+      .filter(r => new Date(r.createdAt) > thirtyDaysAgo)
+      .map(r => r.userId)
   )
 
-  const churn30d = subscriptions.filter(
+  const churn30d = subsData.filter(
     s => (s.status === 'canceled' || s.status === 'paused') &&
-         new Date(s.updated_at) > thirtyDaysAgo
+         new Date(s.updatedAt) > thirtyDaysAgo
   ).length
 
   const reportsByStatus = {
-    draft:  reports.filter(r => r.status === 'draft').length,
-    active: reports.filter(r => r.status === 'active').length,
-    final:  reports.filter(r => r.status === 'final').length,
+    draft:  reportsData.filter(r => r.status === 'draft').length,
+    active: reportsData.filter(r => r.status === 'active').length,
+    final:  reportsData.filter(r => r.status === 'final').length,
   }
 
-  const totalReports = reports.length
+  const totalReports = reportsData.length
   const avgFindingsPerReport = totalReports > 0
     ? Math.round(totalFindings / totalReports)
     : 0
 
-  const recentSignIns: RecentSignIn[] = users
-    .filter(u => u.last_sign_in_at)
-    .sort((a, b) => new Date(b.last_sign_in_at!).getTime() - new Date(a.last_sign_in_at!).getTime())
+  // better-auth does not track last_sign_in_at, so "recent" is the most recent
+  // signups by createdAt; lastSignIn is unavailable and reported as null.
+  const recentSignIns: RecentSignIn[] = [...users]
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
     .slice(0, 10)
     .map(u => ({
       email: u.email ?? 'unknown',
-      createdAt: u.created_at,
-      lastSignIn: u.last_sign_in_at ?? null,
+      createdAt: u.createdAt.toISOString(),
+      lastSignIn: null,
       isPro: proUserIds.has(u.id),
     }))
 
@@ -125,7 +134,7 @@ export async function getAnalyticsData(): Promise<AnalyticsData> {
   }
 }
 
-function buildDailySignups(users: { created_at: string }[], days: number): DailySignup[] {
+function buildDailySignups(users: { createdAt: Date }[], days: number): DailySignup[] {
   const buckets: DailySignup[] = []
   const now = new Date()
 
@@ -136,7 +145,7 @@ function buildDailySignups(users: { created_at: string }[], days: number): Daily
   }
 
   for (const user of users) {
-    const dateStr = new Date(user.created_at).toISOString().split('T')[0]
+    const dateStr = user.createdAt.toISOString().split('T')[0]
     const bucket = buckets.find(b => b.date === dateStr)
     if (bucket) bucket.signups++
   }
