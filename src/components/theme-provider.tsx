@@ -41,8 +41,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>('light')
 
   useEffect(() => {
-    // Sync state with stored preference after hydration
+    // Intentional post-hydration sync: the component renders static values during
+    // SSR/hydration (to avoid a mismatch), then reads the real localStorage
+    // preference once mounted. localStorage is browser-only and cannot be read
+    // during render without breaking hydration, so a one-time setState here is
+    // the correct pattern. The companion mode-change effect re-applies on updates.
     const stored = readStoredMode()
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setModeState(stored)
     setResolvedTheme(resolveTheme(stored))
   }, [])
