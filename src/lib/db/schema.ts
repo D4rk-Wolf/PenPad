@@ -1,8 +1,9 @@
 import { pgTable, uuid, text, numeric, integer, timestamp, date } from 'drizzle-orm/pg-core'
+import { authUser } from './auth-schema'
 
 export const reports = pgTable('reports', {
   id:         uuid('id').primaryKey().defaultRandom(),
-  userId:     uuid('user_id').notNull(),
+  userId:     text('user_id').notNull().references(() => authUser.id, { onDelete: 'cascade' }),
   clientName: text('client_name').notNull(),
   scope:      text('scope'),
   startDate:  date('start_date'),
@@ -29,7 +30,7 @@ export const findings = pgTable('findings', {
 
 export const subscriptions = pgTable('subscriptions', {
   id:                   uuid('id').primaryKey().defaultRandom(),
-  userId:               uuid('user_id').notNull().unique(),
+  userId:               text('user_id').notNull().unique().references(() => authUser.id, { onDelete: 'cascade' }),
   stripeCustomerId:     text('stripe_customer_id'),
   stripeSubscriptionId: text('stripe_subscription_id'),
   status:               text('status'),
@@ -39,7 +40,7 @@ export const subscriptions = pgTable('subscriptions', {
 
 export const findingTemplates = pgTable('finding_templates', {
   id:             uuid('id').primaryKey().defaultRandom(),
-  userId:         uuid('user_id').notNull(),
+  userId:         text('user_id').notNull().references(() => authUser.id, { onDelete: 'cascade' }),
   title:          text('title').notNull(),
   description:    text('description'),
   cvssScore:      numeric('cvss_score', { precision: 3, scale: 1 }),
@@ -52,7 +53,7 @@ export const findingTemplates = pgTable('finding_templates', {
 
 export const userBranding = pgTable('user_branding', {
   id:           uuid('id').primaryKey().defaultRandom(),
-  userId:       uuid('user_id').notNull().unique(),
+  userId:       text('user_id').notNull().unique().references(() => authUser.id, { onDelete: 'cascade' }),
   companyName:  text('company_name'),
   primaryColor: text('primary_color'),
   updatedAt:    timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
