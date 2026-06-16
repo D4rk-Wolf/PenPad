@@ -20,7 +20,7 @@ vi.mock('@/lib/auth/session', () => ({
 
 import { getMySubscription } from '@/lib/subscriptions'
 
-describe('getMySubscription', () => {
+describe('getMySubscription (cloud)', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockWhere.mockReturnValue({ limit: mockLimit })
@@ -35,26 +35,38 @@ describe('getMySubscription', () => {
     expect(mockSelect).not.toHaveBeenCalled()
   })
 
-  it('returns null when user has no subscription', async () => {
+  it('returns inactive cloud sub when trialEndsAt is null (no row)', async () => {
     mockGetCurrentUser.mockResolvedValue({ id: 'user-123' })
     mockLimit.mockResolvedValue([])
     const result = await getMySubscription()
-    expect(result).toBeNull()
+    expect(result).toMatchObject({
+      id: 'cloud',
+      userId: 'user-123',
+      status: 'inactive',
+    })
   })
 
-  it('returns the subscription when one exists', async () => {
-    const fakeSubscription = {
-      id: 'sub-1',
-      userId: 'user-123',
-      stripeCustomerId: 'cus_abc',
-      stripeSubscriptionId: 'sub_abc',
-      status: 'active',
-      currentPeriodEnd: null,
-      updatedAt: new Date(),
-    }
+  it('returns inactive cloud sub when trialEndsAt is in the past', async () => {
     mockGetCurrentUser.mockResolvedValue({ id: 'user-123' })
-    mockLimit.mockResolvedValue([fakeSubscription])
+    mockLimit.mockResolvedValue([{ trialEndsAt: new Date(Date.now() - 86_400_000) }])
     const result = await getMySubscription()
-    expect(result).toEqual(fakeSubscription)
+    expect(result).toMatchObject({
+      id: 'cloud',
+      userId: 'user-123',
+      status: 'inactive',
+    })
+  })
+
+  it('returns active cloud sub when trialEndsAt is in the future', async () => {
+    const future = new Date(Date.now() + 86_400_000)
+    mockGetCurrentUser.mockResolvedValue({ id: 'user-123' })
+    mockLimit.mockResolvedValue([{ trialEndsAt: future }])
+    const result = await getMySubscription()
+    expect(result).toMatchObject({
+      id: 'cloud',
+      userId: 'user-123',
+      status: 'active',
+      currentPeriodEnd: future,
+    })
   })
 })
