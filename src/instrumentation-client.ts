@@ -1,5 +1,6 @@
 import * as Sentry from '@sentry/nextjs'
 import type { ErrorEvent } from '@sentry/nextjs'
+import posthog from 'posthog-js'
 
 /**
  * Strip pentest-sensitive fields from Sentry error events before transmission.
@@ -54,3 +55,17 @@ Sentry.init({
 
   debug: false,
 })
+
+// ── PostHog product analytics ────────────────────────────────────────────────
+// Inert until NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN is set, so this is safe to ship
+// before a PostHog project exists. Autocapture and session recording are disabled
+// deliberately: PenPad pages render confidential client data, so we capture only
+// explicit events (see src/lib/analytics) plus pageviews — never DOM contents.
+if (process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN) {
+  posthog.init(process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN, {
+    api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST ?? 'https://eu.i.posthog.com',
+    defaults: '2026-01-30',
+    autocapture: false,
+    disable_session_recording: true,
+  })
+}

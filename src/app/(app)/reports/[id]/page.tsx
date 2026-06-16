@@ -17,6 +17,7 @@ import { FindingCard } from '@/components/findings/finding-card'
 import { Icons } from '@/components/penpad/icons'
 import { SeverityCounts } from '@/components/penpad/ui'
 import { StatusSelect } from '@/components/reports/status-select'
+import { ExportAction } from '@/components/reports/export-action'
 
 const SEV_ORDER = { critical: 0, high: 1, medium: 2, low: 3, info: 4 }
 
@@ -68,14 +69,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
           </div>
         </div>
         <div className="page-header-actions">
-          {isPro ? (
-            <Link href={`/reports/${id}/export`} target="_blank" className="btn btn-outline btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Icons.Download size={14} />
-              Export PDF
-            </Link>
-          ) : (
-            <Link href="/settings" className="btn btn-outline btn-sm">Upgrade for PDF</Link>
-          )}
+          <ExportAction reportId={id} isPro={isPro} />
         </div>
       </div>
 
