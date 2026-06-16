@@ -35,6 +35,8 @@ export const subscriptions = pgTable('subscriptions', {
   stripeSubscriptionId: text('stripe_subscription_id'),
   status:               text('status'),
   currentPeriodEnd:     timestamp('current_period_end', { withTimezone: true }),
+  keygenLicenseId:      text('keygen_license_id'),
+  licenseKey:           text('license_key'),
   updatedAt:            timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 })
 

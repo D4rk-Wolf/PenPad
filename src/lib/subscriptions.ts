@@ -28,6 +28,8 @@ export const getMySubscription = cache(async (): Promise<Subscription | null> =>
       stripeSubscriptionId: null,
       status: license.tier === 'pro' ? 'active' : 'inactive',
       currentPeriodEnd: null,
+      keygenLicenseId: null,
+      licenseKey: null,
       updatedAt: new Date(),
     }
   }
