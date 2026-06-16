@@ -9,6 +9,7 @@ import { reports, subscriptions } from '@/lib/db/schema'
 import { ReportSchema } from '@/lib/validations'
 import type { Report } from '@/lib/db/schema'
 import { FREE_REPORT_LIMIT } from '@/lib/utils'
+import { captureServer } from '@/lib/analytics/server'
 
 async function getCurrentUserId(): Promise<string> {
   const user = await requireUser()
@@ -58,6 +59,8 @@ export async function createReport(formData: FormData) {
       testerName: d.testerName ?? null,
     })
     .returning()
+
+  await captureServer(userId, 'report_created', { report_id: report.id })
 
   revalidatePath('/dashboard')
   redirect(`/reports/${report.id}`)

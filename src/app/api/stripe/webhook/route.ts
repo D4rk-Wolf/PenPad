@@ -5,6 +5,7 @@ import { db } from '@/lib/db'
 import { subscriptions, stripeEventsProcessed } from '@/lib/db/schema'
 import { authUser as authUserTable } from '@/lib/db/auth-schema'
 import type Stripe from 'stripe'
+import { captureServer } from '@/lib/analytics/server'
 
 function getPeriodEnd(sub: Stripe.Subscription): Date | null {
   const ts = sub.items?.data?.[0]?.current_period_end
@@ -107,6 +108,11 @@ export async function POST(request: NextRequest) {
               updatedAt:            new Date(),
             },
           })
+
+        await captureServer(userId, 'subscription_started', {
+          plan: 'pro',
+          status: subscription.status,
+        })
         break
       }
 

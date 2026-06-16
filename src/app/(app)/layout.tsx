@@ -4,6 +4,7 @@ import { getCurrentUser } from '@/lib/auth/session'
 import { auth } from '@/lib/auth'
 import { AppShell } from '@/components/layout/app-shell'
 import { SentryReplayActivator } from '@/components/sentry-replay-activator'
+import { PostHogIdentify } from '@/components/analytics/posthog-identify'
 import { UpdateBanner } from '@/components/layout/update-banner'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -22,6 +23,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       signOut={signOut}
     >
       <SentryReplayActivator />
+      <PostHogIdentify userId={user.id} email={user.email} />
       <UpdateBanner />
       {children}
     </AppShell>

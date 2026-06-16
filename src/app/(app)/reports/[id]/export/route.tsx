@@ -6,6 +6,7 @@ import { getCurrentUser } from '@/lib/auth/session'
 import { db } from '@/lib/db'
 import { reports, findings, subscriptions, userBranding } from '@/lib/db/schema'
 import { ReportDocument } from '@/components/pdf/report-document'
+import { captureServer } from '@/lib/analytics/server'
 
 // Force Node.js runtime — react-pdf uses Node-only APIs (fs, Buffer)
 export const runtime = 'nodejs'
@@ -36,6 +37,7 @@ export async function GET(
   const sub = subRow ?? null
 
   if (sub?.status !== 'active') {
+    await captureServer(user.id, 'pdf_export_blocked', { report_id: id, source: 'export_route' })
     return NextResponse.json({ error: 'Pro subscription required' }, { status: 403 })
   }
 
