@@ -6,6 +6,7 @@ import { AppShell } from '@/components/layout/app-shell'
 import { SentryReplayActivator } from '@/components/sentry-replay-activator'
 import { PostHogIdentify } from '@/components/analytics/posthog-identify'
 import { UpdateBanner } from '@/components/layout/update-banner'
+import { TrialBanner } from '@/components/layout/trial-banner'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser()
@@ -25,6 +26,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <SentryReplayActivator />
       <PostHogIdentify userId={user.id} email={user.email} />
       <UpdateBanner />
+      <TrialBanner />
       {children}
     </AppShell>
   )

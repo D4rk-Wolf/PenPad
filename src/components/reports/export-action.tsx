@@ -17,6 +17,7 @@ const PRO_BENEFITS = [
   'Client-ready PDF export with CVSS scoring',
   'Your own logo, company name and brand colour',
   'Unlimited reports and reusable finding templates',
+  'Runs on your own server (Docker) — your data never leaves your infra',
 ]
 
 /**
@@ -63,10 +64,9 @@ export function ExportAction({ reportId, isPro }: { reportId: string; isPro: boo
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Export as a client-ready PDF</DialogTitle>
+            <DialogTitle>Get PenPad Pro — self-hosted</DialogTitle>
             <DialogDescription>
-              PDF export is a Pro feature. Upgrade to turn this report into a branded,
-              client-ready document in seconds — no Word formatting required.
+              PDF export is a Pro feature. Pro runs self-hosted, so your clients&apos; data stays on your own infrastructure. £49/mo, cancel anytime.
             </DialogDescription>
           </DialogHeader>
 
