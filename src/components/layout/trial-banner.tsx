@@ -1,9 +1,13 @@
 import { isSelfHosted } from '@/lib/license'
-import { getTrialEndsAt } from '@/lib/subscriptions'
+import { getTrialEndsAt, getCloudLicense } from '@/lib/subscriptions'
 import Link from 'next/link'
 
 export async function TrialBanner() {
   if (isSelfHosted()) return null
+  // A customer who has already purchased (has a license) should never see a
+  // trial/upsell nag when they visit cloud to retrieve their key.
+  const { licenseKey } = await getCloudLicense()
+  if (licenseKey) return null
   const ends = await getTrialEndsAt()
   if (!ends) return null
   const days = Math.ceil((new Date(ends).getTime() - Date.now()) / 86_400_000)
