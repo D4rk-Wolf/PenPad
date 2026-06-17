@@ -5,6 +5,7 @@ import { getCurrentUser } from '@/lib/auth/session'
 import { getLicenseStatus, isSelfHosted } from '@/lib/license'
 import { db } from '@/lib/db'
 import type { Subscription } from '@/lib/db/schema'
+import { subscriptions } from '@/lib/db/schema'
 import { authUser } from '@/lib/db/auth-schema'
 import { isProFromTrial } from '@/lib/entitlement'
 
@@ -69,4 +70,14 @@ export const getTrialEndsAt = cache(async (): Promise<Date | null> => {
     .select({ trialEndsAt: authUser.trialEndsAt })
     .from(authUser).where(eq(authUser.id, user.id)).limit(1)
   return row?.trialEndsAt ?? null
+})
+
+export const getCloudLicense = cache(async (): Promise<{ licenseKey: string | null }> => {
+  if (isSelfHosted()) return { licenseKey: null }
+  const user = await getCurrentUser()
+  if (!user) return { licenseKey: null }
+  const [row] = await db
+    .select({ licenseKey: subscriptions.licenseKey })
+    .from(subscriptions).where(eq(subscriptions.userId, user.id)).limit(1)
+  return { licenseKey: row?.licenseKey ?? null }
 })
