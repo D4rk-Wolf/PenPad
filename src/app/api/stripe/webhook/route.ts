@@ -6,6 +6,8 @@ import { subscriptions, stripeEventsProcessed } from '@/lib/db/schema'
 import { authUser as authUserTable } from '@/lib/db/auth-schema'
 import type Stripe from 'stripe'
 import { captureServer } from '@/lib/analytics/server'
+import { createProLicense, suspendLicense, reinstateLicense } from '@/lib/keygen'
+import { sendLicenseEmail } from '@/lib/email/license'
 
 function getPeriodEnd(sub: Stripe.Subscription): Date | null {
   const ts = sub.items?.data?.[0]?.current_period_end
@@ -113,6 +115,20 @@ export async function POST(request: NextRequest) {
           plan: 'pro',
           status: subscription.status,
         })
+
+        // Provision a self-hosted Keygen license (paid = self-hosted).
+        const [existingLic] = await db
+          .select({ keygenLicenseId: subscriptions.keygenLicenseId })
+          .from(subscriptions).where(eq(subscriptions.userId, userId)).limit(1)
+        if (!existingLic?.keygenLicenseId) {
+          const license = await createProLicense({ email: foundUser.email ?? '', stripeCustomerId, userId })
+          if (license) {
+            await db.update(subscriptions)
+              .set({ keygenLicenseId: license.licenseId, licenseKey: license.licenseKey, updatedAt: new Date() })
+              .where(eq(subscriptions.userId, userId))
+            if (foundUser.email) await sendLicenseEmail(foundUser.email, license.licenseKey)
+          }
+        }
         break
       }
 
@@ -128,6 +144,24 @@ export async function POST(request: NextRequest) {
             updatedAt:       new Date(),
           })
           .where(eq(subscriptions.stripeSubscriptionId, sub.id))
+
+        // Sync Keygen license state.
+        const [subRow] = await db
+          .select({ keygenLicenseId: subscriptions.keygenLicenseId })
+          .from(subscriptions)
+          .where(eq(subscriptions.stripeSubscriptionId, sub.id))
+          .limit(1)
+        if (subRow?.keygenLicenseId) {
+          if (event.type === 'customer.subscription.updated' && sub.status === 'active') {
+            await reinstateLicense(subRow.keygenLicenseId)
+          } else if (
+            event.type === 'customer.subscription.deleted' ||
+            event.type === 'customer.subscription.paused' ||
+            (event.type === 'customer.subscription.updated' && sub.status !== 'active')
+          ) {
+            await suspendLicense(subRow.keygenLicenseId)
+          }
+        }
         break
       }
 
@@ -150,6 +184,18 @@ export async function POST(request: NextRequest) {
           '[stripe/webhook] invoice.payment_failed — subscription:', subId,
           '— new status:', freshSub.status,
         )
+
+        // Suspend Keygen license if payment failed and subscription is no longer active.
+        if (freshSub.status !== 'active') {
+          const [failedSubRow] = await db
+            .select({ keygenLicenseId: subscriptions.keygenLicenseId })
+            .from(subscriptions)
+            .where(eq(subscriptions.stripeSubscriptionId, subId))
+            .limit(1)
+          if (failedSubRow?.keygenLicenseId) {
+            await suspendLicense(failedSubRow.keygenLicenseId)
+          }
+        }
         break
       }
     }
