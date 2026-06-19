@@ -65,3 +65,25 @@ async function revalidatePathForFinding(findingId: string) {
   const [row] = await db.select({ reportId: findings.reportId }).from(findings).where(eq(findings.id, findingId)).limit(1)
   if (row?.reportId) revalidatePath(`/reports/${row.reportId}`)
 }
+
+/** Fetch all image metadata for every finding in a report, in one query. */
+export async function listImagesForReport(reportId: string) {
+  const user = await requireUser()
+  const [r] = await db
+    .select({ id: reports.id })
+    .from(reports)
+    .where(and(eq(reports.id, reportId), eq(reports.userId, user.id)))
+    .limit(1)
+  if (!r) throw new Error('Report not found')
+  return db
+    .select({
+      id: findingImages.id,
+      findingId: findingImages.findingId,
+      caption: findingImages.caption,
+      sortOrder: findingImages.sortOrder,
+    })
+    .from(findingImages)
+    .innerJoin(findings, eq(findings.id, findingImages.findingId))
+    .where(eq(findings.reportId, reportId))
+    .orderBy(asc(findingImages.sortOrder), asc(findingImages.createdAt))
+}
