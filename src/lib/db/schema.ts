@@ -1,5 +1,9 @@
-import { pgTable, uuid, text, numeric, integer, timestamp, date } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, text, numeric, integer, timestamp, date, customType, index } from 'drizzle-orm/pg-core'
 import { authUser } from './auth-schema'
+
+const bytea = customType<{ data: Buffer; default: false }>({
+  dataType() { return 'bytea' },
+})
 
 export const reports = pgTable('reports', {
   id:         uuid('id').primaryKey().defaultRandom(),
@@ -64,6 +68,17 @@ export const stripeEventsProcessed = pgTable('stripe_events_processed', {
   processedAt: timestamp('processed_at', { withTimezone: true }).defaultNow().notNull(),
 })
 
+export const findingImages = pgTable('finding_images', {
+  id:         uuid('id').primaryKey().defaultRandom(),
+  findingId:  uuid('finding_id').notNull().references(() => findings.id, { onDelete: 'cascade' }),
+  data:       bytea('data').notNull(),
+  mimeType:   text('mime_type').notNull(),
+  caption:    text('caption'),
+  sortOrder:  integer('sort_order').notNull().default(0),
+  byteSize:   integer('byte_size').notNull(),
+  createdAt:  timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (t) => [index('finding_images_finding_id_sort_idx').on(t.findingId, t.sortOrder)])
+
 export type Report             = typeof reports.$inferSelect
 export type NewReport          = typeof reports.$inferInsert
 export type Finding            = typeof findings.$inferSelect
@@ -73,5 +88,7 @@ export type FindingTemplate    = typeof findingTemplates.$inferSelect
 export type NewFindingTemplate = typeof findingTemplates.$inferInsert
 export type UserBranding       = typeof userBranding.$inferSelect
 export type StripeEventProcessed = typeof stripeEventsProcessed.$inferSelect
+export type FindingImage    = typeof findingImages.$inferSelect
+export type NewFindingImage = typeof findingImages.$inferInsert
 
 export * from './auth-schema'
