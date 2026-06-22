@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, numeric, integer, timestamp, date } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, text, numeric, integer, timestamp, date, primaryKey } from 'drizzle-orm/pg-core'
 import { authUser } from './auth-schema'
 
 export const reports = pgTable('reports', {
@@ -64,6 +64,12 @@ export const stripeEventsProcessed = pgTable('stripe_events_processed', {
   processedAt: timestamp('processed_at', { withTimezone: true }).defaultNow().notNull(),
 })
 
+export const aiUsage = pgTable('ai_usage', {
+  userId:    text('user_id').notNull(),
+  usageDate: date('usage_date').notNull(),
+  count:     integer('count').notNull().default(0),
+}, (t) => [primaryKey({ columns: [t.userId, t.usageDate] })])
+
 export type Report             = typeof reports.$inferSelect
 export type NewReport          = typeof reports.$inferInsert
 export type Finding            = typeof findings.$inferSelect
@@ -73,5 +79,7 @@ export type FindingTemplate    = typeof findingTemplates.$inferSelect
 export type NewFindingTemplate = typeof findingTemplates.$inferInsert
 export type UserBranding       = typeof userBranding.$inferSelect
 export type StripeEventProcessed = typeof stripeEventsProcessed.$inferSelect
+export type AiUsage    = typeof aiUsage.$inferSelect
+export type NewAiUsage = typeof aiUsage.$inferInsert
 
 export * from './auth-schema'
