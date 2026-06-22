@@ -1,10 +1,11 @@
 // src/app/(app)/reports/[id]/export/route.tsx
 import { NextRequest, NextResponse } from 'next/server'
 import { renderToBuffer } from '@react-pdf/renderer'
-import { eq, and, asc } from 'drizzle-orm'
+import { eq, and, asc, inArray } from 'drizzle-orm'
 import { getCurrentUser } from '@/lib/auth/session'
 import { db } from '@/lib/db'
-import { reports, findings, subscriptions, userBranding } from '@/lib/db/schema'
+import { reports, findings, subscriptions, userBranding, findingImages } from '@/lib/db/schema'
+import { toDataUri } from '@/lib/images'
 import { ReportDocument } from '@/components/pdf/report-document'
 import { captureServer } from '@/lib/analytics/server'
 
@@ -59,11 +60,25 @@ export async function GET(
   ])
   const branding = brandingRow[0] ?? undefined
 
+  // Fetch screenshot evidence for each finding and convert to data URIs
+  const findingIds = findingList.map(f => f.id)
+  const imageRows = findingIds.length
+    ? await db
+        .select({ findingId: findingImages.findingId, data: findingImages.data, mimeType: findingImages.mimeType, caption: findingImages.caption, sortOrder: findingImages.sortOrder })
+        .from(findingImages)
+        .where(inArray(findingImages.findingId, findingIds))
+        .orderBy(asc(findingImages.sortOrder), asc(findingImages.createdAt))
+    : []
+  const imagesByFinding: Record<string, { dataUri: string; caption: string | null }[]> = {}
+  for (const r of imageRows) {
+    ;(imagesByFinding[r.findingId] ??= []).push({ dataUri: toDataUri(r.data, r.mimeType), caption: r.caption })
+  }
+
   // Race the render against a hard timeout so we never hit the Vercel wall-clock limit silently
   let buffer: Buffer
   try {
     const renderPromise = renderToBuffer(
-      <ReportDocument report={report} findings={findingList} branding={branding} />
+      <ReportDocument report={report} findings={findingList} branding={branding} imagesByFinding={imagesByFinding} />
     )
     const timeoutPromise = new Promise<never>((_, reject) =>
       setTimeout(() => reject(new Error('PDF render timed out')), RENDER_TIMEOUT_MS)
