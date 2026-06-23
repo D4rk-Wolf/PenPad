@@ -9,6 +9,7 @@ import { getFindings } from '@/app/actions/findings'
 
 export const metadata: Metadata = { robots: { index: false, follow: false } }
 import { getMySubscription } from '@/lib/subscriptions'
+import { isAiConfigured } from '@/lib/ai/draft'
 import { getMyTemplates } from '@/app/actions/templates'
 
 export const dynamic = 'force-dynamic'
@@ -39,6 +40,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
     getMyTemplates(),
   ])
   const isPro = sub?.status === 'active'
+  const aiEnabled = isAiConfigured() && isPro
 
   const sorted = [...findingList].sort((a, b) =>
     (SEV_ORDER[a.severity as keyof typeof SEV_ORDER] ?? 4) -
@@ -101,7 +103,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
         <div>
           <h2 style={{ fontWeight: 600, fontSize: 'var(--fs-base)', margin: '0 0 12px' }}>Add Finding</h2>
           <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', overflow: 'hidden', padding: '20px' }}>
-            <FindingForm reportId={id} myTemplates={myTemplates} isPro={isPro} />
+            <FindingForm reportId={id} myTemplates={myTemplates} isPro={isPro} aiEnabled={aiEnabled} />
           </div>
         </div>
       </div>
