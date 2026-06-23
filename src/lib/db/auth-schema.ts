@@ -8,6 +8,7 @@ export const authUser = pgTable('auth_user', {
   image:         text('image'),
   createdAt:     timestamp('created_at', { withTimezone: true }).notNull(),
   updatedAt:     timestamp('updated_at', { withTimezone: true }).notNull(),
+  trialEndsAt:   timestamp('trial_ends_at', { withTimezone: true }),
 })
 
 export const authSession = pgTable('auth_session', {

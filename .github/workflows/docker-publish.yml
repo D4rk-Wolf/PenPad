@@ -1,0 +1,65 @@
+name: Publish Docker image
+
+# Builds and publishes the self-hosted PenPad image to GHCR.
+# Runs on a version tag (e.g. v1.2.3) — the normal release path — and can be
+# triggered manually. The license email + /settings/license quickstart point at
+# ghcr.io/d4rk-wolf/penpad:latest, so this is what makes self-hosting actually work.
+#
+# Note: this workflow only runs once it is on the default branch (merged to main)
+# and included in the tagged commit. After merge, push a tag to publish:
+#   git tag v0.1.0 && git push origin v0.1.0
+# First publish creates a PRIVATE GHCR package — make it public (or document a PAT
+# pull) so customers can `docker run` it.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+env:
+  IMAGE: ghcr.io/d4rk-wolf/penpad
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU (multi-arch)
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker metadata (tags + labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

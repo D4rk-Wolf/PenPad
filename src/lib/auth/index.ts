@@ -1,6 +1,7 @@
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import bcrypt from 'bcryptjs'
+import { eq } from 'drizzle-orm'
 import { db } from '@/lib/db'
 import { authUser, authSession, authAccount, authVerification } from '@/lib/db/auth-schema'
 
@@ -38,6 +39,22 @@ export const auth = betterAuth({
       // uuid-typed user_id columns on reports/findings/subscriptions/etc.
       // Also lets Supabase Auth users (whose IDs are UUIDs) migrate 1:1.
       generateId: 'uuid',
+    },
+  },
+  databaseHooks: {
+    user: {
+      create: {
+        after: async (user) => {
+          try {
+            await db
+              .update(authUser)
+              .set({ trialEndsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) })
+              .where(eq(authUser.id, user.id))
+          } catch (err) {
+            console.error('[trial] failed to set trial_ends_at for user', user.id, err)
+          }
+        },
+      },
     },
   },
   trustedOrigins: [

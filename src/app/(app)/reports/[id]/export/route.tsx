@@ -4,9 +4,10 @@ import { renderToBuffer } from '@react-pdf/renderer'
 import { eq, and, asc } from 'drizzle-orm'
 import { getCurrentUser } from '@/lib/auth/session'
 import { db } from '@/lib/db'
-import { reports, findings, subscriptions, userBranding } from '@/lib/db/schema'
+import { reports, findings, userBranding } from '@/lib/db/schema'
 import { ReportDocument } from '@/components/pdf/report-document'
 import { captureServer } from '@/lib/analytics/server'
+import { getMySubscription } from '@/lib/subscriptions'
 
 // Force Node.js runtime — react-pdf uses Node-only APIs (fs, Buffer)
 export const runtime = 'nodejs'
@@ -29,12 +30,7 @@ export async function GET(
   const user = await getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 })
 
-  const [subRow] = await db
-    .select()
-    .from(subscriptions)
-    .where(eq(subscriptions.userId, user.id))
-    .limit(1)
-  const sub = subRow ?? null
+  const sub = await getMySubscription()
 
   if (sub?.status !== 'active') {
     await captureServer(user.id, 'pdf_export_blocked', { report_id: id, source: 'export_route' })

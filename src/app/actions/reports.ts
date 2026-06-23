@@ -5,11 +5,12 @@ import { redirect } from 'next/navigation'
 import { eq, desc, count, and } from 'drizzle-orm'
 import { requireUser } from '@/lib/auth/session'
 import { db } from '@/lib/db'
-import { reports, subscriptions } from '@/lib/db/schema'
+import { reports } from '@/lib/db/schema'
 import { ReportSchema } from '@/lib/validations'
 import type { Report } from '@/lib/db/schema'
 import { FREE_REPORT_LIMIT } from '@/lib/utils'
 import { captureServer } from '@/lib/analytics/server'
+import { getMySubscription } from '@/lib/subscriptions'
 
 async function getCurrentUserId(): Promise<string> {
   const user = await requireUser()
@@ -29,11 +30,11 @@ export async function getReports(): Promise<Report[]> {
 export async function createReport(formData: FormData) {
   const userId = await getCurrentUserId()
 
-  const [countResult, subResult] = await Promise.all([
+  const [countResult, sub] = await Promise.all([
     db.select({ value: count() }).from(reports).where(eq(reports.userId, userId)),
-    db.select({ status: subscriptions.status }).from(subscriptions).where(eq(subscriptions.userId, userId)).limit(1),
+    getMySubscription(),
   ])
-  const isPro = subResult[0]?.status === 'active'
+  const isPro = sub?.status === 'active'
   if (!isPro && (countResult[0]?.value ?? 0) >= FREE_REPORT_LIMIT) {
     throw new Error(`Free tier limited to ${FREE_REPORT_LIMIT} reports. Upgrade to Pro for unlimited.`)
   }
