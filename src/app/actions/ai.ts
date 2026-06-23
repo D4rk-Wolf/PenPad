@@ -25,6 +25,9 @@ export async function draftFinding(input: {
   const d = parsed.data
 
   // Cloud trial: rate-limit on PenPad's key. Self-hosted uses the customer's key.
+  // The slot is spent here, before the AI call — intentionally. Decrementing on
+  // a downstream failure would need a compensating write and reintroduce a race;
+  // with a generous daily cap we accept that a rare failed draft still counts.
   if (!isSelfHosted()) {
     try {
       await checkAndIncrementAiUsage(user.id)

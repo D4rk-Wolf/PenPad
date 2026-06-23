@@ -59,9 +59,16 @@ describe('draftFinding action', () => {
     expect(mockDraftFinding).not.toHaveBeenCalled()
   })
 
+  it('rethrows a non-rate-limit limiter error unchanged (not mapped to the limit message)', async () => {
+    mockCheckAndIncrement.mockRejectedValue(new Error('DB unavailable'))
+    await expect(draftFinding({ title: 'SQLi' })).rejects.toThrow('DB unavailable')
+    expect(mockDraftFinding).not.toHaveBeenCalled()
+  })
+
   it('throws when AI is not configured', async () => {
     mockIsAiConfigured.mockReturnValue(false)
     await expect(draftFinding({ title: 'SQLi' })).rejects.toThrow(/not configured/)
+    expect(mockDraftFinding).not.toHaveBeenCalled()
   })
 
   it('rejects an empty title (validation)', async () => {
