@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, numeric, integer, timestamp, date, customType, index } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, text, numeric, integer, timestamp, date, customType, index, primaryKey } from 'drizzle-orm/pg-core'
 import { authUser } from './auth-schema'
 
 const bytea = customType<{ data: Buffer; default: false }>({
@@ -81,6 +81,12 @@ export const findingImages = pgTable('finding_images', {
   createdAt:  timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 }, (t) => [index('finding_images_finding_id_sort_idx').on(t.findingId, t.sortOrder)])
 
+export const aiUsage = pgTable('ai_usage', {
+  userId:    text('user_id').notNull(),
+  usageDate: date('usage_date').notNull(),
+  count:     integer('count').notNull().default(0),
+}, (t) => [primaryKey({ columns: [t.userId, t.usageDate] })])
+
 export type Report             = typeof reports.$inferSelect
 export type NewReport          = typeof reports.$inferInsert
 export type Finding            = typeof findings.$inferSelect
@@ -92,5 +98,7 @@ export type UserBranding       = typeof userBranding.$inferSelect
 export type StripeEventProcessed = typeof stripeEventsProcessed.$inferSelect
 export type FindingImage    = typeof findingImages.$inferSelect
 export type NewFindingImage = typeof findingImages.$inferInsert
+export type AiUsage    = typeof aiUsage.$inferSelect
+export type NewAiUsage = typeof aiUsage.$inferInsert
 
 export * from './auth-schema'
