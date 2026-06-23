@@ -44,3 +44,13 @@ export const PasswordSchema = z.object({
 })
 
 export type PasswordInput = z.infer<typeof PasswordSchema>
+
+// ── AI drafting ─────────────────────────────────────────────────────────────
+
+export const AiDraftSchema = z.object({
+  title:             z.string().min(1, 'Title is required').max(500),
+  affectedComponent: z.string().max(500).optional().nullable(),
+  notes:             z.string().max(4_000).optional().nullable(),
+})
+
+export type AiDraftInput = z.infer<typeof AiDraftSchema>
