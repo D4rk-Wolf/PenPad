@@ -6,6 +6,7 @@ import { getCurrentUser } from '@/lib/auth/session'
 import { db } from '@/lib/db'
 import { reports } from '@/lib/db/schema'
 import { getFindings } from '@/app/actions/findings'
+import { listImagesForReport } from '@/app/actions/finding-images'
 
 export const metadata: Metadata = { robots: { index: false, follow: false } }
 import { getMySubscription } from '@/lib/subscriptions'
@@ -33,11 +34,18 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
     .limit(1)
   if (!report) notFound()
 
-  const [findingList, sub, myTemplates] = await Promise.all([
+  const [findingList, sub, myTemplates, imageRows] = await Promise.all([
     getFindings(id),
     getMySubscription(),
     getMyTemplates(),
+    listImagesForReport(id),
   ])
+
+  const imagesByFinding: Record<string, { id: string; caption: string | null; sortOrder: number }[]> = {}
+  for (const row of imageRows) {
+    if (!imagesByFinding[row.findingId]) imagesByFinding[row.findingId] = []
+    imagesByFinding[row.findingId].push({ id: row.id, caption: row.caption, sortOrder: row.sortOrder })
+  }
   const isPro = sub?.status === 'active'
 
   const sorted = [...findingList].sort((a, b) =>
@@ -91,7 +99,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
           ) : (
             <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', overflow: 'hidden' }}>
               {sorted.map(finding => (
-                <FindingCard key={finding.id} finding={finding} reportId={id} isPro={isPro} />
+                <FindingCard key={finding.id} finding={finding} reportId={id} isPro={isPro} images={imagesByFinding[finding.id] ?? []} />
               ))}
             </div>
           )}

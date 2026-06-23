@@ -7,15 +7,19 @@ import { saveTemplate } from '@/app/actions/templates'
 import { Icons } from '@/components/penpad/icons'
 import { SeverityPill, CvssGauge } from '@/components/penpad/ui'
 import type { Finding } from '@/lib/db/schema'
+import { EvidenceImages } from './evidence-images'
+import type { ImageMeta } from './evidence-images'
 
 export function FindingCard({
   finding,
   reportId,
   isPro,
+  images = [],
 }: {
   finding: Finding
   reportId: string
   isPro: boolean
+  images?: ImageMeta[]
 }) {
   const severity = (finding.severity ?? 'info') as 'critical' | 'high' | 'medium' | 'low' | 'info'
   const cvss = Number(finding.cvssScore ?? 0)
@@ -66,6 +70,10 @@ export function FindingCard({
           <pre className="code-block">{finding.evidence}</pre>
         </div>
       )}
+      <div className="finding-detail-section">
+        <h4>Screenshots</h4>
+        <EvidenceImages findingId={finding.id} initialImages={images} />
+      </div>
       <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
         <form action={deleteFinding.bind(null, finding.id, reportId)}>
           <button type="submit" className="btn btn-ghost btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--sev-critical)' }}>

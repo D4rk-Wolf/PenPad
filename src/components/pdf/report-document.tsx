@@ -1,5 +1,5 @@
 // src/components/pdf/report-document.tsx
-import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
+import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer'
 import type { Report, Finding } from '@/lib/db/schema'
 import type { Severity } from '@/lib/utils'
 
@@ -480,11 +480,13 @@ function FindingsPages({
   findings,
   sorted,
   branding,
+  imagesByFinding,
 }: {
   report: Report
   findings: Finding[]
   sorted: Finding[]
   branding?: PdfBranding
+  imagesByFinding?: Record<string, { dataUri: string; caption: string | null }[]>
 }) {
   const brandColor = branding?.primaryColor || BRAND_BLUE
   const brandName  = branding?.companyName  || 'PenPad'
@@ -597,6 +599,13 @@ function FindingsPages({
                 <Text style={styles.evidenceValue}>{finding.evidence}</Text>
               </>
             ) : null}
+
+            {(imagesByFinding?.[finding.id] ?? []).map((img, i) => (
+              <View key={i} wrap={false} style={{ marginTop: 6 }}>
+                <Image src={img.dataUri} style={{ width: '100%', maxHeight: 320, objectFit: 'contain' }} />
+                {img.caption ? <Text style={styles.fieldValue}>{img.caption}</Text> : null}
+              </View>
+            ))}
           </View>
         )
       })}
@@ -608,10 +617,12 @@ export function ReportDocument({
   report,
   findings,
   branding,
+  imagesByFinding,
 }: {
   report: Report
   findings: Finding[]
   branding?: PdfBranding
+  imagesByFinding?: Record<string, { dataUri: string; caption: string | null }[]>
 }) {
   const sorted = [...findings].sort((a, b) => {
     const sa = severityOrder[a.severity ?? 'info'] ?? 4
@@ -623,7 +634,7 @@ export function ReportDocument({
   return (
     <Document>
       <CoverPage report={report} findings={findings} branding={branding} />
-      <FindingsPages report={report} findings={findings} sorted={sorted} branding={branding} />
+      <FindingsPages report={report} findings={findings} sorted={sorted} branding={branding} imagesByFinding={imagesByFinding} />
     </Document>
   )
 }
